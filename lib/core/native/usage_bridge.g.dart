@@ -1,0 +1,237 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'usage_bridge.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// Pigeon [UsageApi] 인스턴스를 제공하는 provider.
+
+@ProviderFor(usageApi)
+final usageApiProvider = UsageApiProvider._();
+
+/// Pigeon [UsageApi] 인스턴스를 제공하는 provider.
+
+final class UsageApiProvider
+    extends $FunctionalProvider<UsageApi, UsageApi, UsageApi>
+    with $Provider<UsageApi> {
+  /// Pigeon [UsageApi] 인스턴스를 제공하는 provider.
+  UsageApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'usageApiProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$usageApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<UsageApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  UsageApi create(Ref ref) {
+    return usageApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UsageApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UsageApi>(value),
+    );
+  }
+}
+
+String _$usageApiHash() => r'b65925d7e4d831d945529df7798df8ec8646c8c4';
+
+/// UsageStats 특수 권한 보유 여부를 반환하는 provider.
+
+@ProviderFor(hasUsagePermission)
+final hasUsagePermissionProvider = HasUsagePermissionProvider._();
+
+/// UsageStats 특수 권한 보유 여부를 반환하는 provider.
+
+final class HasUsagePermissionProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// UsageStats 특수 권한 보유 여부를 반환하는 provider.
+  HasUsagePermissionProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'hasUsagePermissionProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$hasUsagePermissionHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return hasUsagePermission(ref);
+  }
+}
+
+String _$hasUsagePermissionHash() =>
+    r'fff1eea9c0a19162b2ec5e00cd9fba1faf4beb44';
+
+/// 주어진 시간 범위의 앱 사용 통계를 조회하는 provider.
+
+@ProviderFor(queryUsageStats)
+final queryUsageStatsProvider = QueryUsageStatsFamily._();
+
+/// 주어진 시간 범위의 앱 사용 통계를 조회하는 provider.
+
+final class QueryUsageStatsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<AppUsageInfo>>,
+          List<AppUsageInfo>,
+          FutureOr<List<AppUsageInfo>>
+        >
+    with
+        $FutureModifier<List<AppUsageInfo>>,
+        $FutureProvider<List<AppUsageInfo>> {
+  /// 주어진 시간 범위의 앱 사용 통계를 조회하는 provider.
+  QueryUsageStatsProvider._({
+    required QueryUsageStatsFamily super.from,
+    required ({int startTime, int endTime}) super.argument,
+  }) : super(
+         retry: null,
+         name: r'queryUsageStatsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$queryUsageStatsHash();
+
+  @override
+  String toString() {
+    return r'queryUsageStatsProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<AppUsageInfo>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<AppUsageInfo>> create(Ref ref) {
+    final argument = this.argument as ({int startTime, int endTime});
+    return queryUsageStats(
+      ref,
+      startTime: argument.startTime,
+      endTime: argument.endTime,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is QueryUsageStatsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$queryUsageStatsHash() => r'05b011025c5692e54e42b230650622c875929ebc';
+
+/// 주어진 시간 범위의 앱 사용 통계를 조회하는 provider.
+
+final class QueryUsageStatsFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<List<AppUsageInfo>>,
+          ({int startTime, int endTime})
+        > {
+  QueryUsageStatsFamily._()
+    : super(
+        retry: null,
+        name: r'queryUsageStatsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 주어진 시간 범위의 앱 사용 통계를 조회하는 provider.
+
+  QueryUsageStatsProvider call({
+    required int startTime,
+    required int endTime,
+  }) => QueryUsageStatsProvider._(
+    argument: (startTime: startTime, endTime: endTime),
+    from: this,
+  );
+
+  @override
+  String toString() => r'queryUsageStatsProvider';
+}
+
+/// 설치된 패키지 목록을 반환하는 provider.
+
+@ProviderFor(installedPackages)
+final installedPackagesProvider = InstalledPackagesProvider._();
+
+/// 설치된 패키지 목록을 반환하는 provider.
+
+final class InstalledPackagesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<String>>,
+          List<String>,
+          FutureOr<List<String>>
+        >
+    with $FutureModifier<List<String>>, $FutureProvider<List<String>> {
+  /// 설치된 패키지 목록을 반환하는 provider.
+  InstalledPackagesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'installedPackagesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$installedPackagesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<String>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<String>> create(Ref ref) {
+    return installedPackages(ref);
+  }
+}
+
+String _$installedPackagesHash() => r'0f6ad3f091c54bcbc8143c9224b6118c7c6eace6';

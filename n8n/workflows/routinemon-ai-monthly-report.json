@@ -1,0 +1,231 @@
+{
+  "name": "routinemon-ai-monthly-report",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "routinemon/ai/monthly-report",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "routinemon-ai-monthly-report"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build systemPrompt + userPrompt for the Basic LLM Chain.\n// Encodes 3-axis intensity metrics (작성 / 이행 / 체크) so the LLM can\n// reflect actual user execution patterns instead of just numeric averages.\nconst body = $input.first().json.body || {};\nif (!body.user_id || !body.data) {\n  return [{ json: { valid: false, reason: 'missing_fields', body } }];\n}\nconst d = body.data || {};\nconst locale = body.user_locale || 'ko';\nconst period = (body.period || 'weekly');\n\nconst pct = (n) => Math.round((Number(n) || 0) * 100);\nconst todoRate = d.todos_total ? Math.round(((d.todos_completed || 0) / d.todos_total) * 100) : 0;\nconst onTimeRate = d.todos_completed ? Math.round(((d.todos_completed_on_due_day || 0) / d.todos_completed) * 100) : 0;\nconst execRate = d.planned_minutes ? Math.round(((d.actual_focus_minutes || 0) / d.planned_minutes) * 100) : 0;\nconst grades = d.sessions_by_grade || {};\nconst gradeStr = ['S','A','B','C','D'].map(g => `${g}:${grades[g]||0}`).join(' ');\nconst categoryStr = Object.entries(d.category_distribution || {}).map(([k,v]) => `${k}:${v}`).join(' ') || '없음';\n\nconst systemPrompt = [\n  'You are a wellness coach producing a structured JSON report in Korean.',\n  'Output ONLY a single JSON object — NO markdown, NO reasoning prose.',\n  'Schema: { summary (string ≤160 chars), insights (3-5 short Korean strings), suggestions (2-3 short Korean strings), encouragement (1 positive Korean sentence) }.',\n  'Use the three intensity axes (작성/이행/체크) when forming insights — point out imbalances if any.',\n  `Locale: ${locale}. Period: ${period}.`\n].join('\\n');\n\nconst userPrompt = [\n  '[작성 강도 — Authoring]',\n  `- 신규 일정 ${d.schedules_created||0}개, 계획 총 ${d.schedules_total_minutes||0}분`,\n  `- 카테고리 분포: ${categoryStr}`,\n  '',\n  '[이행 강도 — Execution]',\n  `- 집중 세션 ${d.focus_sessions||0}회, 평균 집중도 ${pct(d.avg_focus_ratio)}%`,\n  `- 계획 ${d.planned_minutes||0}분 중 실제 ${d.actual_focus_minutes||0}분 (${execRate}%)`,\n  `- 등급 분포: ${gradeStr}`,\n  '',\n  '[체크 강도 — Completion]',\n  `- 할일 ${d.todos_completed||0}/${d.todos_total||0} (${todoRate}%), 당일 체크 ${d.todos_completed_on_due_day||0}회 (${onTimeRate}%)`,\n  `- 일반 일정 추가 체크 ${d.non_todo_completed||0}회`,\n  '',\n  `[연속 ${d.streak_days||0}일]`,\n  '',\n  '위 3축을 종합해 JSON 한 객체로만 응답하세요.'\n].join('\\n');\n\nreturn [{ json: { valid: true, body, systemPrompt, userPrompt } }];"
+      },
+      "name": "Validate + Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "valid_check",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.systemPrompt }}\n\n{{ $json.userPrompt }}"
+      },
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        860,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemma-4-e4b",
+          "mode": "list"
+        },
+        "options": {
+          "temperature": 0.4,
+          "maxTokens": 4096
+        }
+      },
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        860,
+        460
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "uvZOqz3d6W7bFUbq",
+          "name": "lm_studio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\nlet content = '';\nif (typeof res.text === 'string') content = res.text;\nelse if (res.output && typeof res.output === 'object') content = JSON.stringify(res.output);\nelse if (typeof res.response === 'string') content = res.response;\nelse content = JSON.stringify(res);\ncontent = content.trim();\nif (content.startsWith('```')) {\n  content = content.replace(/^```(?:json)?\\s*\\n?/i, '').replace(/\\n?```\\s*$/, '').trim();\n}\nlet parsed;\ntry { parsed = JSON.parse(content); } catch (e) { parsed = null; }\nif (!parsed || typeof parsed.summary !== 'string') {\n  return [{ json: { summary: 'LLM parse failed', insights: [], suggestions: [], encouragement: '', source: 'preset' } }];\n}\nreturn [{ json: {\n  summary: parsed.summary,\n  insights: Array.isArray(parsed.insights) ? parsed.insights.map(String).slice(0, 5) : [],\n  suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.map(String).slice(0, 3) : [],\n  encouragement: typeof parsed.encouragement === 'string' ? parsed.encouragement : '',\n  source: 'llm'\n}}];"
+      },
+      "name": "Parse LLM JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst d = body.data || {};\nconst ratio = Math.round((d.avg_focus_ratio || 0) * 100);\nconst todoRate = d.todos_total ? Math.round(((d.todos_completed || 0) / d.todos_total) * 100) : 0;\nreturn [{ json: { summary: `작성 ${d.schedules_created||0}개 · 집중 ${d.focus_sessions||0}회(평균 ${ratio}%) · 체크 ${todoRate}% (연속 ${d.streak_days||0}일)`, insights: [], suggestions: [], encouragement: '수치를 확인해 보세요.', source: 'preset' } }];"
+      },
+      "name": "Preset Fallback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        360
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate + Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate + Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preset Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM JSON": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preset Fallback": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

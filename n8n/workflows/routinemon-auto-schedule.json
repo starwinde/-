@@ -1,0 +1,232 @@
+{
+  "name": "routinemon-auto-schedule",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "routinemon/auto-schedule",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "routinemon-auto-schedule"
+    },
+    {
+      "parameters": {
+        "jsCode": "const PROFANITY_KO = ['바보', '멍청', '씨발', '개새끼', '지랄'];\nconst PROFANITY_EN = ['fuck', 'shit', 'asshole', 'idiot', 'bitch'];\nconst SELF_HARM = ['자해', '자살', '죽고 싶', 'kill myself', 'self harm', 'suicide'];\n\nconst body = $input.first().json.body || {};\nconst text = (body.text || '').trim();\nconst userLocale = body.user_locale || 'ko';\nif (!text) return [{ json: { valid: false, reason: 'empty_text', systemPrompt: '', userPrompt: '' } }];\nconst lower = text.toLowerCase();\nfor (const word of SELF_HARM) if (lower.includes(word)) return [{ json: { valid: false, reason: 'self_harm', systemPrompt: '', userPrompt: '' } }];\nfor (const word of [...PROFANITY_KO, ...PROFANITY_EN]) if (lower.includes(word)) return [{ json: { valid: false, reason: 'profanity', systemPrompt: '', userPrompt: '' } }];\n\nconst systemPrompt = [\n  'You are a JSON schedule parser. Output ONLY a single JSON object — NO reasoning, NO explanation, NO markdown.',\n  'Keys: title (string), start_time (ISO8601 or null), end_time (ISO8601 or null), category (one of: work, study, hobby, health, etc), tags (string array), confidence (0.0-1.0).',\n  'If start/end unknown, use null. If uncertain about fields, set confidence low and tags empty.',\n  `Locale: ${userLocale}.`\n].join('\\n');\n\nreturn [{ json: { valid: true, text, userLocale, systemPrompt, userPrompt: text } }];"
+      },
+      "name": "Validate + Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "valid_check",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.systemPrompt }}\n\n{{ $json.userPrompt }}"
+      },
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        860,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemma-4-e4b",
+          "mode": "list"
+        },
+        "options": {
+          "temperature": 0.2,
+          "maxTokens": 4096
+        }
+      },
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        860,
+        460
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "uvZOqz3d6W7bFUbq",
+          "name": "lm_studio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\nlet content = '';\nif (typeof res.text === 'string') content = res.text;\nelse if (res.output && typeof res.output === 'object') content = JSON.stringify(res.output);\nelse if (typeof res.response === 'string') content = res.response;\nelse content = JSON.stringify(res);\ncontent = content.trim();\nif (content.startsWith('```')) {\n  content = content.replace(/^```(?:json)?\\s*\\n?/i, '').replace(/\\n?```\\s*$/, '').trim();\n}\nlet parsed;\ntry { parsed = JSON.parse(content); } catch (e) { parsed = null; }\nif (!parsed || typeof parsed.title !== 'string') {\n  return [{ json: { title: '', start_time: null, end_time: null, category: 'etc', tags: [], confidence: 0.0, source: 'preset' } }];\n}\nreturn [{ json: {\n  title: parsed.title,\n  start_time: parsed.start_time ?? null,\n  end_time: parsed.end_time ?? null,\n  category: ['work','study','hobby','health','etc'].includes(parsed.category) ? parsed.category : 'etc',\n  tags: Array.isArray(parsed.tags) ? parsed.tags.map(String) : [],\n  confidence: typeof parsed.confidence === 'number' ? Math.max(0, Math.min(1, parsed.confidence)) : 0.0,\n  source: 'llm'\n}}];"
+      },
+      "name": "Parse LLM JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { title: '', start_time: null, end_time: null, category: 'etc', tags: [], confidence: 0.0, source: 'preset' } }];"
+      },
+      "name": "Preset Fallback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        360
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate + Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate + Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preset Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM JSON": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preset Fallback": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
