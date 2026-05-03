@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/onboarding/presentation/permission_page.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
+import 'package:routinemon/features/pet/presentation/pet_placeholder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 5-step onboarding flow (PRD 2.3, T2.8).
@@ -374,17 +375,14 @@ class _EggSelectionStep extends StatelessWidget {
     PetSpecies.bird: (
       label: '새',
       description: '빠르게 성장하는 신화의 새',
-      icon: Icons.flutter_dash,
     ),
     PetSpecies.dragon: (
       label: '드래곤',
       description: '웅장한 판타지 드래곤',
-      icon: Icons.local_fire_department,
     ),
     PetSpecies.dolphin: (
       label: '돌고래',
       description: '신성한 바다의 왕',
-      icon: Icons.water,
     ),
   };
 
@@ -418,12 +416,10 @@ class _EggSelectionStep extends StatelessWidget {
                         .primaryContainer
                     : null,
                 child: ListTile(
-                  leading: Icon(
-                    info.icon,
-                    size: 40,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
+                  leading: PetPlaceholder(
+                    species: species,
+                    kind: PetPlaceholderKind.egg,
+                    size: 56,
                   ),
                   title: Text(info.label),
                   subtitle: Text(info.description),

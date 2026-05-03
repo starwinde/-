@@ -6,12 +6,15 @@ import 'package:routinemon/core/db/tables/outbox.dart';
 import 'package:routinemon/core/db/tables/pets.dart';
 import 'package:routinemon/core/db/tables/schedules.dart';
 import 'package:routinemon/core/db/tables/sessions.dart';
+import 'package:routinemon/core/db/tables/usage_logs.dart';
 
 part 'app_database.g.dart';
 
 /// Single Drift database instance for 루틴몬.
-/// Phase 2: 5 tables — Schedules, Pets, DailyScores, Outbox, Sessions.
-@DriftDatabase(tables: [Schedules, Pets, DailyScores, Outbox, Sessions])
+/// v4 (2026-05-03): UsageLogs added (ADR 0004 — observe-only L0 + 모든 단계 사용 기록).
+@DriftDatabase(
+  tables: [Schedules, Pets, DailyScores, Outbox, Sessions, UsageLogs],
+)
 class AppDatabase extends _$AppDatabase {
   /// Opens the on-device SQLite database named `routinemon`.
   AppDatabase() : super(_open());
@@ -22,7 +25,7 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _open() => driftDatabase(name: 'routinemon');
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +34,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) {
         await m.addColumn(schedules, schedules.allowDisruption);
         await m.addColumn(schedules, schedules.disruptionIntensity);
+      }
+      if (from < 4) {
+        await m.createTable(usageLogs);
       }
     },
   );

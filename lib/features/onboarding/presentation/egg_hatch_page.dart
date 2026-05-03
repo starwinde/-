@@ -9,6 +9,7 @@ import 'package:routinemon/core/native/api_client.dart';
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
 import 'package:routinemon/features/pet/domain/pet_name_validator.dart';
+import 'package:routinemon/features/pet/presentation/pet_placeholder.dart';
 import 'package:routinemon/features/schedule/application/schedule_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -139,6 +140,7 @@ class _EggHatchPageState extends ConsumerState<EggHatchPage> {
         ),
       2 => _CrackingStage(
           key: const ValueKey(2),
+          species: widget.species,
           onTap: _advanceStage,
         ),
       3 => _NameInputStage(
@@ -174,13 +176,10 @@ class _EggStage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 120,
-            height: 150,
-            decoration: BoxDecoration(
-              color: _eggColor(species),
-              borderRadius: BorderRadius.circular(60),
-            ),
+          PetPlaceholder(
+            species: species,
+            kind: PetPlaceholderKind.egg,
+            size: 140,
           ),
           const SizedBox(height: 24),
           Text(
@@ -190,14 +189,6 @@ class _EggStage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Color _eggColor(PetSpecies species) {
-    return switch (species) {
-      PetSpecies.bird => const Color(0xFFFFD54F),
-      PetSpecies.dragon => const Color(0xFFEF5350),
-      PetSpecies.dolphin => const Color(0xFF42A5F5),
-    };
   }
 }
 
@@ -239,7 +230,12 @@ class _GoldDustStage extends StatelessWidget {
 
 // --- Stage 2: Cracking ---
 class _CrackingStage extends StatelessWidget {
-  const _CrackingStage({super.key, required this.onTap});
+  const _CrackingStage({
+    super.key,
+    required this.species,
+    required this.onTap,
+  });
+  final PetSpecies species;
   final VoidCallback onTap;
 
   @override
@@ -249,19 +245,10 @@ class _CrackingStage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 150,
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade300,
-                  borderRadius: BorderRadius.circular(60),
-                ),
-              ),
-              const Icon(Icons.flash_on, size: 60, color: Colors.white),
-            ],
+          PetPlaceholder(
+            species: species,
+            kind: PetPlaceholderKind.eggCracking,
+            size: 140,
           ),
           const SizedBox(height: 24),
           Text(
@@ -304,10 +291,10 @@ class _NameInputStage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.egg_alt,
-            size: 80,
-            color: Theme.of(context).colorScheme.primary,
+          PetPlaceholder(
+            species: species,
+            kind: PetPlaceholderKind.stage,
+            size: 100,
           ),
           const SizedBox(height: 16),
           Text(
@@ -364,10 +351,10 @@ class _WelcomeStage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.celebration,
-            size: 80,
-            color: Theme.of(context).colorScheme.primary,
+          PetPlaceholder(
+            species: species,
+            kind: PetPlaceholderKind.stage,
+            size: 100,
           ),
           const SizedBox(height: 16),
           Text(

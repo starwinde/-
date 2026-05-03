@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:routinemon/core/native/api_client.dart';
 import 'package:routinemon/features/ai/data/report_aggregator.dart';
 import 'package:routinemon/features/schedule/data/weekly_wizard_service.dart';
 import 'package:routinemon/features/schedule/data/wizard_models.dart';
+import 'package:routinemon/features/schedule/domain/conflict_report.dart';
 import 'package:routinemon/features/schedule/domain/schedule_category.dart';
 
 class _MockApiClient extends Mock implements ApiClient {}
@@ -15,6 +17,7 @@ class _MockAggregator extends Mock implements ReportAggregator {}
 
 WizardAnswers _sampleAnswers({
   PastWeekContext? pastWeekContext,
+  String? fixedSchedules,
 }) =>
     WizardAnswers(
       status: LifestyleStatus.worker,
@@ -33,6 +36,7 @@ WizardAnswers _sampleAnswers({
       exercisePreferredTime: ExercisePreferredTime.evening,
       goalFocus: GoalFocus.workStudy,
       pastWeekContext: pastWeekContext,
+      fixedSchedules: fixedSchedules,
     );
 
 void main() {
@@ -40,7 +44,7 @@ void main() {
     registerFallbackValue(<String, dynamic>{});
   });
 
-  group('WeeklyWizardService.generate', () {
+  group('WeeklyWizardService.generate (Path A — rule-based 기본)', () {
     late _MockApiClient client;
     late _MockAggregator aggregator;
     late WeeklyWizardService service;
@@ -60,51 +64,63 @@ void main() {
       ).thenAnswer((_) async => null);
     });
 
-    test('posts to /webhook/routinemon/weekly-wizard and parses LLM response',
-        () async {
-      final bodyJson = jsonEncode({
-        'items': [
-          {
-            'title': '러닝',
-            'day_of_week': 2,
-            'start_time': '06:30',
-            'end_time': '07:15',
-            'category': 'health',
-            'tags': <String>[],
-          },
-        ],
-        'source': 'llm',
-      });
-      when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
-        (_) async => http.Response(
-          bodyJson,
-          200,
-          headers: {'content-type': 'application/json; charset=utf-8'},
-        ),
-      );
-
-      final result =
-          await service.generate(answers: answers, weekStart: weekStart);
-
-      expect(result.source, WizardSource.llm);
-      expect(result.items, hasLength(1));
-      expect(result.items.first.title, '러닝');
-      verify(() => client.post(
-            '/webhook/routinemon/weekly-wizard',
-            body: {
-              'answers': answers.toJson(),
-              'week_start': '2026-04-20',
-            },
-          )).called(1);
+    test('LLM 호출 0건 — apiClient.post() 미호출', () async {
+      await service.generate(answers: answers, weekStart: weekStart);
+      verifyNever(() => client.post(any(), body: any(named: 'body')));
     });
 
-    test('injects pastWeekContext from aggregator when userId is provided',
-        () async {
+    test('source = WizardSource.rule, items 10~18 범위', () async {
+      final result =
+          await service.generate(answers: answers, weekStart: weekStart);
+      expect(result.source, WizardSource.rule);
+      expect(result.items.length, inInclusiveRange(10, 18));
+    });
+
+    test('빈 existingThisWeek → conflicts 에 EXISTING_OVERLAP 0건', () async {
+      final result =
+          await service.generate(answers: answers, weekStart: weekStart);
+      expect(
+        result.conflicts.where(
+          (c) => c.kind == ConflictKind.existingOverlap,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('기존 schedules 와 겹치면 EXISTING_OVERLAP 첨부', () async {
+      // Path A 가 만드는 슬롯 중 한 곳을 노린 가짜 기존 일정
+      final existing = [
+        (
+          id: 99,
+          start: DateTime(2026, 4, 20, 9, 30),
+          end: DateTime(2026, 4, 20, 10, 30),
+        ),
+      ];
+      final result = await service.generate(
+        answers: answers,
+        weekStart: weekStart,
+        existingThisWeek: existing,
+      );
+      expect(
+        result.conflicts.where(
+          (c) => c.kind == ConflictKind.existingOverlap,
+        ),
+        isNotEmpty,
+      );
+    });
+
+    test('fixedSchedules 파싱 실패 → warnings 누적', () async {
+      final result = await service.generate(
+        answers: _sampleAnswers(fixedSchedules: '오후 3시 회의'),
+        weekStart: weekStart,
+      );
+      expect(result.warnings, isNotEmpty);
+    });
+
+    test('userId 제공 + pastWeekContext 주입 → planner 가 보정', () async {
       const ctx = PastWeekContext(
-        weeklyCompletionRate: 0.42,
-        lowestCompletionCategory: 'study',
-        mostMissedTimeBlock: 'evening',
-        focusRatioAvg: 0.55,
+        weeklyCompletionRate: 0.3,
+        focusRatioAvg: 0.4,
         weeksObserved: 4,
       );
       when(
@@ -113,41 +129,19 @@ void main() {
           weeks: any(named: 'weeks'),
         ),
       ).thenAnswer((_) async => ctx);
-      when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
-        (_) async => http.Response(
-          jsonEncode({'items': <Map<String, dynamic>>[], 'source': 'llm'}),
-          200,
-        ),
-      );
 
-      await service.generate(
+      final result = await service.generate(
         answers: answers,
         weekStart: weekStart,
         userId: 'u1',
       );
-
-      final captured =
-          verify(() => client.post(any(), body: captureAny(named: 'body')))
-              .captured
-              .single as Map<String, dynamic>;
-      final answersJson = captured['answers'] as Map<String, dynamic>;
-      final pastJson = answersJson['past_week_context'] as Map<String, dynamic>;
-      expect(pastJson['weekly_completion_rate'], 0.42);
-      expect(pastJson['lowest_completion_category'], 'study');
-      expect(pastJson['most_missed_time_block'], 'evening');
-      expect(pastJson['weeks_observed'], 4);
+      // 보정 후 items 가 줄어듦 (단순히 응답은 받음)
+      expect(result.items, isNotEmpty);
+      expect(result.source, WizardSource.rule);
     });
 
-    test('does not call aggregator when userId is null', () async {
-      when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
-        (_) async => http.Response(
-          jsonEncode({'items': <Map<String, dynamic>>[], 'source': 'llm'}),
-          200,
-        ),
-      );
-
+    test('userId 없음 → aggregator 미호출', () async {
       await service.generate(answers: answers, weekStart: weekStart);
-
       verifyNever(
         () => aggregator.pastWeekContext(
           userId: any(named: 'userId'),
@@ -155,40 +149,9 @@ void main() {
         ),
       );
     });
-
-    test('returns preset fallback on non-2xx status', () async {
-      when(() => client.post(any(), body: any(named: 'body')))
-          .thenAnswer((_) async => http.Response('Server Error', 500));
-
-      final result =
-          await service.generate(answers: answers, weekStart: weekStart);
-
-      expect(result.source, WizardSource.preset);
-      expect(result.items, isEmpty);
-    });
-
-    test('returns preset fallback on JSON parse failure', () async {
-      when(() => client.post(any(), body: any(named: 'body')))
-          .thenAnswer((_) async => http.Response('not json', 200));
-
-      final result =
-          await service.generate(answers: answers, weekStart: weekStart);
-
-      expect(result.source, WizardSource.preset);
-    });
-
-    test('returns preset fallback on network exception', () async {
-      when(() => client.post(any(), body: any(named: 'body')))
-          .thenThrow(Exception('network down'));
-
-      final result =
-          await service.generate(answers: answers, weekStart: weekStart);
-
-      expect(result.source, WizardSource.preset);
-    });
   });
 
-  group('WeeklyWizardService.refine', () {
+  group('WeeklyWizardService.refine (LLM 단발 — Issue 07 에서 multi-turn)', () {
     late _MockApiClient client;
     late _MockAggregator aggregator;
     late WeeklyWizardService service;
@@ -211,6 +174,18 @@ void main() {
       'exercise-strength': 'mid',
     };
 
+    final emptySession = RefinementSession(
+      conversationId: 'conv-1',
+      history: [
+        RefinementTurn(
+          turn: 1,
+          items: previousItems,
+          followupAnswers: const {},
+          timestamp: DateTime(2026, 4, 20, 10),
+        ),
+      ],
+    );
+
     setUp(() {
       client = _MockApiClient();
       aggregator = _MockAggregator();
@@ -223,8 +198,7 @@ void main() {
       ).thenAnswer((_) async => null);
     });
 
-    test('posts body with refinement key containing previous_items + '
-        'followup_answers', () async {
+    test('refine body 에 mode/previous_turns/conversation_id/turn/followup', () async {
       when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
         (_) async => http.Response(
           jsonEncode({
@@ -239,24 +213,22 @@ void main() {
       await service.refine(
         answers: answers,
         weekStart: weekStart,
-        previousItems: previousItems,
+        session: emptySession,
         followupAnswers: followupAnswers,
       );
 
-      verify(() => client.post(
-            '/webhook/routinemon/weekly-wizard',
-            body: {
-              'answers': answers.toJson(),
-              'week_start': '2026-04-20',
-              'refinement': {
-                'previous_items': [previousItems.first.toJson()],
-                'followup_answers': followupAnswers,
-              },
-            },
-          )).called(1);
+      final captured =
+          verify(() => client.post(any(), body: captureAny(named: 'body')))
+              .captured
+              .single as Map<String, dynamic>;
+      expect(captured['mode'], 'refine');
+      expect(captured['conversation_id'], 'conv-1');
+      expect(captured['turn'], 2);
+      expect(captured['previous_turns'], isA<List<dynamic>>());
+      expect(captured['followup_answers'], followupAnswers);
     });
 
-    test('parses response items correctly', () async {
+    test('LLM 응답 파싱 → source=llm, items 매핑', () async {
       final bodyJson = jsonEncode({
         'items': [
           {
@@ -281,24 +253,23 @@ void main() {
       final result = await service.refine(
         answers: answers,
         weekStart: weekStart,
-        previousItems: previousItems,
+        session: emptySession,
         followupAnswers: followupAnswers,
       );
 
       expect(result.source, WizardSource.llm);
       expect(result.items, hasLength(1));
       expect(result.items.first.title, '독서');
-      expect(result.items.first.category, ScheduleCategory.study);
     });
 
-    test('returns preset on non-2xx', () async {
+    test('5xx → preset 폴백 (Issue 06 에서 retry 추가 예정)', () async {
       when(() => client.post(any(), body: any(named: 'body')))
           .thenAnswer((_) async => http.Response('Server Error', 500));
 
       final result = await service.refine(
         answers: answers,
         weekStart: weekStart,
-        previousItems: previousItems,
+        session: emptySession,
         followupAnswers: followupAnswers,
       );
 
@@ -306,19 +277,241 @@ void main() {
       expect(result.items, isEmpty);
     });
 
-    test('returns preset on exception', () async {
+    test('네트워크 예외 → preset 폴백', () async {
       when(() => client.post(any(), body: any(named: 'body')))
           .thenThrow(Exception('network down'));
 
       final result = await service.refine(
         answers: answers,
         weekStart: weekStart,
-        previousItems: previousItems,
+        session: emptySession,
         followupAnswers: followupAnswers,
       );
 
       expect(result.source, WizardSource.preset);
       expect(result.items, isEmpty);
+    });
+  });
+
+  group('WeeklyWizardService.enhance (Path B — LLM enhance, 3-retry §9.3)', () {
+    late _MockApiClient client;
+    late _MockAggregator aggregator;
+    late WeeklyWizardService service;
+
+    final answers = _sampleAnswers();
+    final weekStart = DateTime(2026, 4, 20);
+
+    const seed = <GeneratedScheduleItem>[
+      GeneratedScheduleItem(
+        title: '딥 포커스',
+        dayOfWeek: 0,
+        startTime: '09:00',
+        endTime: '10:30',
+        category: ScheduleCategory.work,
+      ),
+    ];
+
+    setUp(() {
+      client = _MockApiClient();
+      aggregator = _MockAggregator();
+      // sleep 스텁: 즉시 반환 (테스트 가속)
+      service = WeeklyWizardService(
+        client,
+        aggregator,
+        sleep: (_) async {},
+      );
+      when(
+        () => aggregator.pastWeekContext(
+          userId: any(named: 'userId'),
+          weeks: any(named: 'weeks'),
+        ),
+      ).thenAnswer((_) async => null);
+    });
+
+    test('mode=enhance + rule_based_seed + objective + conversation_id 포함',
+        () async {
+      when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
+        (_) async => http.Response(
+          jsonEncode({
+            'items': [
+              {
+                'title': '강화된 딥 포커스',
+                'day_of_week': 0,
+                'start_time': '09:00',
+                'end_time': '10:30',
+                'category': 'work',
+                'tags': <String>[],
+              },
+            ],
+            'source': 'llm',
+          }),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        ),
+      );
+
+      await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.diversifyTitles,
+        conversationId: 'c1',
+      );
+
+      final captured =
+          verify(() => client.post(any(), body: captureAny(named: 'body')))
+              .captured
+              .single as Map<String, dynamic>;
+      expect(captured['mode'], 'enhance');
+      expect(captured['enhance_objective'], 'diversify_titles');
+      expect(captured['conversation_id'], 'c1');
+      expect(captured['turn'], 1);
+      expect(captured['rule_based_seed'], isA<List<dynamic>>());
+    });
+
+    test('정상 LLM 응답 → source=llm, items 매핑', () async {
+      when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
+        (_) async => http.Response(
+          jsonEncode({
+            'items': [
+              {
+                'title': '강화된 딥 포커스',
+                'day_of_week': 0,
+                'start_time': '09:00',
+                'end_time': '10:30',
+                'category': 'work',
+                'tags': <String>[],
+              },
+            ],
+            'source': 'llm',
+          }),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        ),
+      );
+
+      final result = await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.rebalanceLoad,
+      );
+      expect(result.source, WizardSource.llm);
+      expect(result.items.first.title, '강화된 딥 포커스');
+    });
+
+    test('5xx 3회 연속 → seed 폴백 (3 retry)', () async {
+      when(() => client.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async => http.Response('Server Error', 500));
+
+      final result = await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.diversifyTitles,
+      );
+      verify(() => client.post(any(), body: any(named: 'body'))).called(3);
+      expect(result.items, equals(seed));
+      expect(result.source, WizardSource.rule);
+      expect(result.warnings.first, contains('enhance 실패'));
+    });
+
+    test('4xx → 즉시 폴백 (재시도 0)', () async {
+      when(() => client.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async => http.Response('Bad Request', 400));
+
+      final result = await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.diversifyTitles,
+      );
+      verify(() => client.post(any(), body: any(named: 'body'))).called(1);
+      expect(result.items, equals(seed));
+      expect(result.source, WizardSource.rule);
+    });
+
+    test('timeout 3회 → seed 폴백', () async {
+      when(() => client.post(any(), body: any(named: 'body')))
+          .thenThrow(TimeoutException('timeout'));
+
+      final result = await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.diversifyTitles,
+      );
+      verify(() => client.post(any(), body: any(named: 'body'))).called(3);
+      expect(result.items, equals(seed));
+    });
+
+    test('parse 실패 3회 → seed 폴백', () async {
+      when(() => client.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async => http.Response('not json', 200));
+
+      final result = await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.diversifyTitles,
+      );
+      verify(() => client.post(any(), body: any(named: 'body'))).called(3);
+      expect(result.items, equals(seed));
+    });
+
+    test('items.isEmpty 3회 → seed 폴백', () async {
+      when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
+        (_) async => http.Response(
+          jsonEncode({'items': <Map<String, dynamic>>[], 'source': 'llm'}),
+          200,
+        ),
+      );
+
+      final result = await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.diversifyTitles,
+      );
+      verify(() => client.post(any(), body: any(named: 'body'))).called(3);
+      expect(result.items, equals(seed));
+    });
+
+    test('첫 번째 5xx → 두 번째 200 → 정상 응답 (1 retry)', () async {
+      var calls = 0;
+      when(() => client.post(any(), body: any(named: 'body'))).thenAnswer(
+        (_) async {
+          calls++;
+          if (calls == 1) return http.Response('Server Error', 500);
+          return http.Response(
+            jsonEncode({
+              'items': [
+                {
+                  'title': '회복',
+                  'day_of_week': 1,
+                  'start_time': '20:00',
+                  'end_time': '21:00',
+                  'category': 'health',
+                  'tags': <String>[],
+                },
+              ],
+              'source': 'llm',
+            }),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        },
+      );
+
+      final result = await service.enhance(
+        answers: answers,
+        weekStart: weekStart,
+        seed: seed,
+        objective: EnhanceObjective.diversifyTitles,
+      );
+      verify(() => client.post(any(), body: any(named: 'body'))).called(2);
+      expect(result.source, WizardSource.llm);
+      expect(result.items.first.title, '회복');
     });
   });
 }

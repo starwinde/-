@@ -235,3 +235,61 @@ final class InstalledPackagesProvider
 }
 
 String _$installedPackagesHash() => r'0f6ad3f091c54bcbc8143c9224b6118c7c6eace6';
+
+/// 패키지명 → 사람 표시명 캐시. UI 가 batch 로 lookup 후 결과 캐시.
+
+@ProviderFor(AppLabelCache)
+final appLabelCacheProvider = AppLabelCacheProvider._();
+
+/// 패키지명 → 사람 표시명 캐시. UI 가 batch 로 lookup 후 결과 캐시.
+final class AppLabelCacheProvider
+    extends $NotifierProvider<AppLabelCache, Map<String, String>> {
+  /// 패키지명 → 사람 표시명 캐시. UI 가 batch 로 lookup 후 결과 캐시.
+  AppLabelCacheProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appLabelCacheProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appLabelCacheHash();
+
+  @$internal
+  @override
+  AppLabelCache create() => AppLabelCache();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(Map<String, String> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Map<String, String>>(value),
+    );
+  }
+}
+
+String _$appLabelCacheHash() => r'4ec999e5376844df043aad61174482faaf4fc2d1';
+
+/// 패키지명 → 사람 표시명 캐시. UI 가 batch 로 lookup 후 결과 캐시.
+
+abstract class _$AppLabelCache extends $Notifier<Map<String, String>> {
+  Map<String, String> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<Map<String, String>, Map<String, String>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Map<String, String>, Map<String, String>>,
+              Map<String, String>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

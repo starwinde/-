@@ -1,5 +1,8 @@
-/// 일정별 방해 허용(T5.21) 강도. 1=L1, 2=L2, 3=L3.
+/// 일정별 방해 허용(T5.21) 강도. 0=L0, 1=L1, 2=L2, 3=L3 (ADR 0004).
 enum DisturbanceLevel {
+  /// L0: 기록만 — 방해 동작 없음. 사용 정보 (포그라운드 앱 + 시간) 만 누적.
+  l0,
+
   /// L1: 짧은 진동 + 검은 풀스크린 오버레이.
   l1,
 
@@ -9,9 +12,11 @@ enum DisturbanceLevel {
   /// L3: 강한 진동 + 풀스크린 차단 + 주기적 화면 잠금 (DEVICE_ADMIN).
   l3;
 
-  /// Drift int 컬럼 → enum 변환 (1/2/3, 그 외는 L1로 안전 디폴트).
+  /// Drift int 컬럼 → enum 변환 (0/1/2/3, 그 외는 L1로 안전 디폴트).
   static DisturbanceLevel fromInt(int value) {
     switch (value) {
+      case 0:
+        return DisturbanceLevel.l0;
       case 2:
         return DisturbanceLevel.l2;
       case 3:
@@ -84,6 +89,9 @@ class DisturbanceIntervention {
     if (last != null && now.difference(last) < cooldown) return null;
     _lastEventTime = now;
     switch (level) {
+      case DisturbanceLevel.l0:
+        // 기록만, 모든 액션 0/false (DisturbanceAction 기본값).
+        return const DisturbanceAction(vibrateMs: 0);
       case DisturbanceLevel.l1:
         return const DisturbanceAction(
           vibrateMs: 200,

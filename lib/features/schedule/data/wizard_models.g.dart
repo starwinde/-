@@ -191,6 +191,10 @@ _GeneratedScheduleItem _$GeneratedScheduleItemFromJson(
   tags:
       (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
+  source:
+      $enumDecodeNullable(_$WizardSourceEnumMap, json['source']) ??
+      WizardSource.rule,
+  confidence: (json['confidence'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$GeneratedScheduleItemToJson(
@@ -202,6 +206,14 @@ Map<String, dynamic> _$GeneratedScheduleItemToJson(
   'end_time': instance.endTime,
   'category': _catToJson(instance.category),
   'tags': instance.tags,
+  'source': _$WizardSourceEnumMap[instance.source]!,
+  'confidence': instance.confidence,
+};
+
+const _$WizardSourceEnumMap = {
+  WizardSource.rule: 'rule',
+  WizardSource.llm: 'llm',
+  WizardSource.preset: 'preset',
 };
 
 _FollowupOption _$FollowupOptionFromJson(Map<String, dynamic> json) =>
@@ -229,6 +241,46 @@ Map<String, dynamic> _$FollowupQuestionToJson(_FollowupQuestion instance) =>
       'options': instance.options.map((e) => e.toJson()).toList(),
     };
 
+_RefinementTurn _$RefinementTurnFromJson(Map<String, dynamic> json) =>
+    _RefinementTurn(
+      turn: (json['turn'] as num).toInt(),
+      items: (json['items'] as List<dynamic>)
+          .map((e) => GeneratedScheduleItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      followupAnswers:
+          (json['followup_answers'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as String),
+          ) ??
+          const <String, String>{},
+      diffSummary: json['diff_summary'] as String?,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+
+Map<String, dynamic> _$RefinementTurnToJson(_RefinementTurn instance) =>
+    <String, dynamic>{
+      'turn': instance.turn,
+      'items': instance.items.map((e) => e.toJson()).toList(),
+      'followup_answers': instance.followupAnswers,
+      'diff_summary': instance.diffSummary,
+      'timestamp': instance.timestamp.toIso8601String(),
+    };
+
+_RefinementSession _$RefinementSessionFromJson(Map<String, dynamic> json) =>
+    _RefinementSession(
+      conversationId: json['conversation_id'] as String,
+      history:
+          (json['history'] as List<dynamic>?)
+              ?.map((e) => RefinementTurn.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <RefinementTurn>[],
+    );
+
+Map<String, dynamic> _$RefinementSessionToJson(_RefinementSession instance) =>
+    <String, dynamic>{
+      'conversation_id': instance.conversationId,
+      'history': instance.history.map((e) => e.toJson()).toList(),
+    };
+
 _WeeklyWizardResponse _$WeeklyWizardResponseFromJson(
   Map<String, dynamic> json,
 ) => _WeeklyWizardResponse(
@@ -241,6 +293,17 @@ _WeeklyWizardResponse _$WeeklyWizardResponseFromJson(
           ?.map((e) => FollowupQuestion.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const <FollowupQuestion>[],
+  conflicts:
+      (json['conflicts'] as List<dynamic>?)
+          ?.map((e) => ConflictReport.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <ConflictReport>[],
+  diffSummary: json['diff_summary'] as String?,
+  conversationId: json['conversation_id'] as String?,
+  turn: (json['turn'] as num?)?.toInt() ?? 0,
+  warnings:
+      (json['warnings'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const <String>[],
 );
 
 Map<String, dynamic> _$WeeklyWizardResponseToJson(
@@ -251,9 +314,16 @@ Map<String, dynamic> _$WeeklyWizardResponseToJson(
   'followup_questions': instance.followupQuestions
       .map((e) => e.toJson())
       .toList(),
+  'conflicts': instance.conflicts.map((e) => e.toJson()).toList(),
+  'diff_summary': instance.diffSummary,
+  'conversation_id': instance.conversationId,
+  'turn': instance.turn,
+  'warnings': instance.warnings,
 };
 
-const _$WizardSourceEnumMap = {
-  WizardSource.llm: 'llm',
-  WizardSource.preset: 'preset',
+const _$EnhanceObjectiveEnumMap = {
+  EnhanceObjective.diversifyTitles: 'diversify_titles',
+  EnhanceObjective.rebalanceLoad: 'rebalance_load',
+  EnhanceObjective.addRecovery: 'add_recovery',
+  EnhanceObjective.refineCategories: 'refine_categories',
 };

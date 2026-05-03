@@ -613,7 +613,7 @@ as int,
 /// @nodoc
 mixin _$GeneratedScheduleItem {
 
- String get title;@JsonKey(name: 'day_of_week') int get dayOfWeek;@JsonKey(name: 'start_time') String get startTime;@JsonKey(name: 'end_time') String get endTime;@JsonKey(fromJson: _catFromJson, toJson: _catToJson) ScheduleCategory get category; List<String> get tags;
+ String get title;@JsonKey(name: 'day_of_week') int get dayOfWeek;@JsonKey(name: 'start_time') String get startTime;@JsonKey(name: 'end_time') String get endTime;@JsonKey(fromJson: _catFromJson, toJson: _catToJson) ScheduleCategory get category; List<String> get tags; WizardSource get source; double? get confidence;
 /// Create a copy of GeneratedScheduleItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -626,16 +626,16 @@ $GeneratedScheduleItemCopyWith<GeneratedScheduleItem> get copyWith => _$Generate
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GeneratedScheduleItem&&(identical(other.title, title) || other.title == title)&&(identical(other.dayOfWeek, dayOfWeek) || other.dayOfWeek == dayOfWeek)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other.tags, tags));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GeneratedScheduleItem&&(identical(other.title, title) || other.title == title)&&(identical(other.dayOfWeek, dayOfWeek) || other.dayOfWeek == dayOfWeek)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.source, source) || other.source == source)&&(identical(other.confidence, confidence) || other.confidence == confidence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,dayOfWeek,startTime,endTime,category,const DeepCollectionEquality().hash(tags));
+int get hashCode => Object.hash(runtimeType,title,dayOfWeek,startTime,endTime,category,const DeepCollectionEquality().hash(tags),source,confidence);
 
 @override
 String toString() {
-  return 'GeneratedScheduleItem(title: $title, dayOfWeek: $dayOfWeek, startTime: $startTime, endTime: $endTime, category: $category, tags: $tags)';
+  return 'GeneratedScheduleItem(title: $title, dayOfWeek: $dayOfWeek, startTime: $startTime, endTime: $endTime, category: $category, tags: $tags, source: $source, confidence: $confidence)';
 }
 
 
@@ -646,7 +646,7 @@ abstract mixin class $GeneratedScheduleItemCopyWith<$Res>  {
   factory $GeneratedScheduleItemCopyWith(GeneratedScheduleItem value, $Res Function(GeneratedScheduleItem) _then) = _$GeneratedScheduleItemCopyWithImpl;
 @useResult
 $Res call({
- String title,@JsonKey(name: 'day_of_week') int dayOfWeek,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime,@JsonKey(fromJson: _catFromJson, toJson: _catToJson) ScheduleCategory category, List<String> tags
+ String title,@JsonKey(name: 'day_of_week') int dayOfWeek,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime,@JsonKey(fromJson: _catFromJson, toJson: _catToJson) ScheduleCategory category, List<String> tags, WizardSource source, double? confidence
 });
 
 
@@ -663,7 +663,7 @@ class _$GeneratedScheduleItemCopyWithImpl<$Res>
 
 /// Create a copy of GeneratedScheduleItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? dayOfWeek = null,Object? startTime = null,Object? endTime = null,Object? category = null,Object? tags = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? dayOfWeek = null,Object? startTime = null,Object? endTime = null,Object? category = null,Object? tags = null,Object? source = null,Object? confidence = freezed,}) {
   return _then(_self.copyWith(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,dayOfWeek: null == dayOfWeek ? _self.dayOfWeek : dayOfWeek // ignore: cast_nullable_to_non_nullable
@@ -671,7 +671,9 @@ as int,startTime: null == startTime ? _self.startTime : startTime // ignore: cas
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as ScheduleCategory,tags: null == tags ? _self.tags : tags // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as WizardSource,confidence: freezed == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
@@ -753,10 +755,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title, @JsonKey(name: 'day_of_week')  int dayOfWeek, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson)  ScheduleCategory category,  List<String> tags)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title, @JsonKey(name: 'day_of_week')  int dayOfWeek, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson)  ScheduleCategory category,  List<String> tags,  WizardSource source,  double? confidence)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GeneratedScheduleItem() when $default != null:
-return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.category,_that.tags);case _:
+return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.category,_that.tags,_that.source,_that.confidence);case _:
   return orElse();
 
 }
@@ -774,10 +776,10 @@ return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title, @JsonKey(name: 'day_of_week')  int dayOfWeek, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson)  ScheduleCategory category,  List<String> tags)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title, @JsonKey(name: 'day_of_week')  int dayOfWeek, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson)  ScheduleCategory category,  List<String> tags,  WizardSource source,  double? confidence)  $default,) {final _that = this;
 switch (_that) {
 case _GeneratedScheduleItem():
-return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.category,_that.tags);}
+return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.category,_that.tags,_that.source,_that.confidence);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -791,10 +793,10 @@ return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title, @JsonKey(name: 'day_of_week')  int dayOfWeek, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson)  ScheduleCategory category,  List<String> tags)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title, @JsonKey(name: 'day_of_week')  int dayOfWeek, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson)  ScheduleCategory category,  List<String> tags,  WizardSource source,  double? confidence)?  $default,) {final _that = this;
 switch (_that) {
 case _GeneratedScheduleItem() when $default != null:
-return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.category,_that.tags);case _:
+return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.category,_that.tags,_that.source,_that.confidence);case _:
   return null;
 
 }
@@ -806,7 +808,7 @@ return $default(_that.title,_that.dayOfWeek,_that.startTime,_that.endTime,_that.
 @JsonSerializable()
 
 class _GeneratedScheduleItem extends GeneratedScheduleItem {
-  const _GeneratedScheduleItem({required this.title, @JsonKey(name: 'day_of_week') required this.dayOfWeek, @JsonKey(name: 'start_time') required this.startTime, @JsonKey(name: 'end_time') required this.endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson) required this.category, final  List<String> tags = const []}): _tags = tags,super._();
+  const _GeneratedScheduleItem({required this.title, @JsonKey(name: 'day_of_week') required this.dayOfWeek, @JsonKey(name: 'start_time') required this.startTime, @JsonKey(name: 'end_time') required this.endTime, @JsonKey(fromJson: _catFromJson, toJson: _catToJson) required this.category, final  List<String> tags = const [], this.source = WizardSource.rule, this.confidence}): _tags = tags,super._();
   factory _GeneratedScheduleItem.fromJson(Map<String, dynamic> json) => _$GeneratedScheduleItemFromJson(json);
 
 @override final  String title;
@@ -821,6 +823,8 @@ class _GeneratedScheduleItem extends GeneratedScheduleItem {
   return EqualUnmodifiableListView(_tags);
 }
 
+@override@JsonKey() final  WizardSource source;
+@override final  double? confidence;
 
 /// Create a copy of GeneratedScheduleItem
 /// with the given fields replaced by the non-null parameter values.
@@ -835,16 +839,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GeneratedScheduleItem&&(identical(other.title, title) || other.title == title)&&(identical(other.dayOfWeek, dayOfWeek) || other.dayOfWeek == dayOfWeek)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other._tags, _tags));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GeneratedScheduleItem&&(identical(other.title, title) || other.title == title)&&(identical(other.dayOfWeek, dayOfWeek) || other.dayOfWeek == dayOfWeek)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.source, source) || other.source == source)&&(identical(other.confidence, confidence) || other.confidence == confidence));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,dayOfWeek,startTime,endTime,category,const DeepCollectionEquality().hash(_tags));
+int get hashCode => Object.hash(runtimeType,title,dayOfWeek,startTime,endTime,category,const DeepCollectionEquality().hash(_tags),source,confidence);
 
 @override
 String toString() {
-  return 'GeneratedScheduleItem(title: $title, dayOfWeek: $dayOfWeek, startTime: $startTime, endTime: $endTime, category: $category, tags: $tags)';
+  return 'GeneratedScheduleItem(title: $title, dayOfWeek: $dayOfWeek, startTime: $startTime, endTime: $endTime, category: $category, tags: $tags, source: $source, confidence: $confidence)';
 }
 
 
@@ -855,7 +859,7 @@ abstract mixin class _$GeneratedScheduleItemCopyWith<$Res> implements $Generated
   factory _$GeneratedScheduleItemCopyWith(_GeneratedScheduleItem value, $Res Function(_GeneratedScheduleItem) _then) = __$GeneratedScheduleItemCopyWithImpl;
 @override @useResult
 $Res call({
- String title,@JsonKey(name: 'day_of_week') int dayOfWeek,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime,@JsonKey(fromJson: _catFromJson, toJson: _catToJson) ScheduleCategory category, List<String> tags
+ String title,@JsonKey(name: 'day_of_week') int dayOfWeek,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime,@JsonKey(fromJson: _catFromJson, toJson: _catToJson) ScheduleCategory category, List<String> tags, WizardSource source, double? confidence
 });
 
 
@@ -872,7 +876,7 @@ class __$GeneratedScheduleItemCopyWithImpl<$Res>
 
 /// Create a copy of GeneratedScheduleItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? dayOfWeek = null,Object? startTime = null,Object? endTime = null,Object? category = null,Object? tags = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? dayOfWeek = null,Object? startTime = null,Object? endTime = null,Object? category = null,Object? tags = null,Object? source = null,Object? confidence = freezed,}) {
   return _then(_GeneratedScheduleItem(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,dayOfWeek: null == dayOfWeek ? _self.dayOfWeek : dayOfWeek // ignore: cast_nullable_to_non_nullable
@@ -880,7 +884,9 @@ as int,startTime: null == startTime ? _self.startTime : startTime // ignore: cas
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as ScheduleCategory,tags: null == tags ? _self._tags : tags // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as WizardSource,confidence: freezed == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
@@ -1418,9 +1424,556 @@ as List<FollowupOption>,
 
 
 /// @nodoc
+mixin _$RefinementTurn {
+
+ int get turn; List<GeneratedScheduleItem> get items;@JsonKey(name: 'followup_answers') Map<String, String> get followupAnswers;@JsonKey(name: 'diff_summary') String? get diffSummary; DateTime get timestamp;
+/// Create a copy of RefinementTurn
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RefinementTurnCopyWith<RefinementTurn> get copyWith => _$RefinementTurnCopyWithImpl<RefinementTurn>(this as RefinementTurn, _$identity);
+
+  /// Serializes this RefinementTurn to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefinementTurn&&(identical(other.turn, turn) || other.turn == turn)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.followupAnswers, followupAnswers)&&(identical(other.diffSummary, diffSummary) || other.diffSummary == diffSummary)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,turn,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(followupAnswers),diffSummary,timestamp);
+
+@override
+String toString() {
+  return 'RefinementTurn(turn: $turn, items: $items, followupAnswers: $followupAnswers, diffSummary: $diffSummary, timestamp: $timestamp)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RefinementTurnCopyWith<$Res>  {
+  factory $RefinementTurnCopyWith(RefinementTurn value, $Res Function(RefinementTurn) _then) = _$RefinementTurnCopyWithImpl;
+@useResult
+$Res call({
+ int turn, List<GeneratedScheduleItem> items,@JsonKey(name: 'followup_answers') Map<String, String> followupAnswers,@JsonKey(name: 'diff_summary') String? diffSummary, DateTime timestamp
+});
+
+
+
+
+}
+/// @nodoc
+class _$RefinementTurnCopyWithImpl<$Res>
+    implements $RefinementTurnCopyWith<$Res> {
+  _$RefinementTurnCopyWithImpl(this._self, this._then);
+
+  final RefinementTurn _self;
+  final $Res Function(RefinementTurn) _then;
+
+/// Create a copy of RefinementTurn
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? turn = null,Object? items = null,Object? followupAnswers = null,Object? diffSummary = freezed,Object? timestamp = null,}) {
+  return _then(_self.copyWith(
+turn: null == turn ? _self.turn : turn // ignore: cast_nullable_to_non_nullable
+as int,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<GeneratedScheduleItem>,followupAnswers: null == followupAnswers ? _self.followupAnswers : followupAnswers // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,diffSummary: freezed == diffSummary ? _self.diffSummary : diffSummary // ignore: cast_nullable_to_non_nullable
+as String?,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RefinementTurn].
+extension RefinementTurnPatterns on RefinementTurn {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RefinementTurn value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RefinementTurn() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RefinementTurn value)  $default,){
+final _that = this;
+switch (_that) {
+case _RefinementTurn():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RefinementTurn value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RefinementTurn() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int turn,  List<GeneratedScheduleItem> items, @JsonKey(name: 'followup_answers')  Map<String, String> followupAnswers, @JsonKey(name: 'diff_summary')  String? diffSummary,  DateTime timestamp)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RefinementTurn() when $default != null:
+return $default(_that.turn,_that.items,_that.followupAnswers,_that.diffSummary,_that.timestamp);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int turn,  List<GeneratedScheduleItem> items, @JsonKey(name: 'followup_answers')  Map<String, String> followupAnswers, @JsonKey(name: 'diff_summary')  String? diffSummary,  DateTime timestamp)  $default,) {final _that = this;
+switch (_that) {
+case _RefinementTurn():
+return $default(_that.turn,_that.items,_that.followupAnswers,_that.diffSummary,_that.timestamp);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int turn,  List<GeneratedScheduleItem> items, @JsonKey(name: 'followup_answers')  Map<String, String> followupAnswers, @JsonKey(name: 'diff_summary')  String? diffSummary,  DateTime timestamp)?  $default,) {final _that = this;
+switch (_that) {
+case _RefinementTurn() when $default != null:
+return $default(_that.turn,_that.items,_that.followupAnswers,_that.diffSummary,_that.timestamp);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _RefinementTurn implements RefinementTurn {
+  const _RefinementTurn({required this.turn, required final  List<GeneratedScheduleItem> items, @JsonKey(name: 'followup_answers') final  Map<String, String> followupAnswers = const <String, String>{}, @JsonKey(name: 'diff_summary') this.diffSummary, required this.timestamp}): _items = items,_followupAnswers = followupAnswers;
+  factory _RefinementTurn.fromJson(Map<String, dynamic> json) => _$RefinementTurnFromJson(json);
+
+@override final  int turn;
+ final  List<GeneratedScheduleItem> _items;
+@override List<GeneratedScheduleItem> get items {
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_items);
+}
+
+ final  Map<String, String> _followupAnswers;
+@override@JsonKey(name: 'followup_answers') Map<String, String> get followupAnswers {
+  if (_followupAnswers is EqualUnmodifiableMapView) return _followupAnswers;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_followupAnswers);
+}
+
+@override@JsonKey(name: 'diff_summary') final  String? diffSummary;
+@override final  DateTime timestamp;
+
+/// Create a copy of RefinementTurn
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RefinementTurnCopyWith<_RefinementTurn> get copyWith => __$RefinementTurnCopyWithImpl<_RefinementTurn>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$RefinementTurnToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefinementTurn&&(identical(other.turn, turn) || other.turn == turn)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._followupAnswers, _followupAnswers)&&(identical(other.diffSummary, diffSummary) || other.diffSummary == diffSummary)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,turn,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_followupAnswers),diffSummary,timestamp);
+
+@override
+String toString() {
+  return 'RefinementTurn(turn: $turn, items: $items, followupAnswers: $followupAnswers, diffSummary: $diffSummary, timestamp: $timestamp)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RefinementTurnCopyWith<$Res> implements $RefinementTurnCopyWith<$Res> {
+  factory _$RefinementTurnCopyWith(_RefinementTurn value, $Res Function(_RefinementTurn) _then) = __$RefinementTurnCopyWithImpl;
+@override @useResult
+$Res call({
+ int turn, List<GeneratedScheduleItem> items,@JsonKey(name: 'followup_answers') Map<String, String> followupAnswers,@JsonKey(name: 'diff_summary') String? diffSummary, DateTime timestamp
+});
+
+
+
+
+}
+/// @nodoc
+class __$RefinementTurnCopyWithImpl<$Res>
+    implements _$RefinementTurnCopyWith<$Res> {
+  __$RefinementTurnCopyWithImpl(this._self, this._then);
+
+  final _RefinementTurn _self;
+  final $Res Function(_RefinementTurn) _then;
+
+/// Create a copy of RefinementTurn
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? turn = null,Object? items = null,Object? followupAnswers = null,Object? diffSummary = freezed,Object? timestamp = null,}) {
+  return _then(_RefinementTurn(
+turn: null == turn ? _self.turn : turn // ignore: cast_nullable_to_non_nullable
+as int,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<GeneratedScheduleItem>,followupAnswers: null == followupAnswers ? _self._followupAnswers : followupAnswers // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,diffSummary: freezed == diffSummary ? _self.diffSummary : diffSummary // ignore: cast_nullable_to_non_nullable
+as String?,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$RefinementSession {
+
+@JsonKey(name: 'conversation_id') String get conversationId; List<RefinementTurn> get history;
+/// Create a copy of RefinementSession
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RefinementSessionCopyWith<RefinementSession> get copyWith => _$RefinementSessionCopyWithImpl<RefinementSession>(this as RefinementSession, _$identity);
+
+  /// Serializes this RefinementSession to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefinementSession&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&const DeepCollectionEquality().equals(other.history, history));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,conversationId,const DeepCollectionEquality().hash(history));
+
+@override
+String toString() {
+  return 'RefinementSession(conversationId: $conversationId, history: $history)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RefinementSessionCopyWith<$Res>  {
+  factory $RefinementSessionCopyWith(RefinementSession value, $Res Function(RefinementSession) _then) = _$RefinementSessionCopyWithImpl;
+@useResult
+$Res call({
+@JsonKey(name: 'conversation_id') String conversationId, List<RefinementTurn> history
+});
+
+
+
+
+}
+/// @nodoc
+class _$RefinementSessionCopyWithImpl<$Res>
+    implements $RefinementSessionCopyWith<$Res> {
+  _$RefinementSessionCopyWithImpl(this._self, this._then);
+
+  final RefinementSession _self;
+  final $Res Function(RefinementSession) _then;
+
+/// Create a copy of RefinementSession
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? conversationId = null,Object? history = null,}) {
+  return _then(_self.copyWith(
+conversationId: null == conversationId ? _self.conversationId : conversationId // ignore: cast_nullable_to_non_nullable
+as String,history: null == history ? _self.history : history // ignore: cast_nullable_to_non_nullable
+as List<RefinementTurn>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RefinementSession].
+extension RefinementSessionPatterns on RefinementSession {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RefinementSession value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RefinementSession() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RefinementSession value)  $default,){
+final _that = this;
+switch (_that) {
+case _RefinementSession():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RefinementSession value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RefinementSession() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'conversation_id')  String conversationId,  List<RefinementTurn> history)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RefinementSession() when $default != null:
+return $default(_that.conversationId,_that.history);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'conversation_id')  String conversationId,  List<RefinementTurn> history)  $default,) {final _that = this;
+switch (_that) {
+case _RefinementSession():
+return $default(_that.conversationId,_that.history);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'conversation_id')  String conversationId,  List<RefinementTurn> history)?  $default,) {final _that = this;
+switch (_that) {
+case _RefinementSession() when $default != null:
+return $default(_that.conversationId,_that.history);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _RefinementSession extends RefinementSession {
+  const _RefinementSession({@JsonKey(name: 'conversation_id') required this.conversationId, final  List<RefinementTurn> history = const <RefinementTurn>[]}): _history = history,super._();
+  factory _RefinementSession.fromJson(Map<String, dynamic> json) => _$RefinementSessionFromJson(json);
+
+@override@JsonKey(name: 'conversation_id') final  String conversationId;
+ final  List<RefinementTurn> _history;
+@override@JsonKey() List<RefinementTurn> get history {
+  if (_history is EqualUnmodifiableListView) return _history;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_history);
+}
+
+
+/// Create a copy of RefinementSession
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RefinementSessionCopyWith<_RefinementSession> get copyWith => __$RefinementSessionCopyWithImpl<_RefinementSession>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$RefinementSessionToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefinementSession&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&const DeepCollectionEquality().equals(other._history, _history));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,conversationId,const DeepCollectionEquality().hash(_history));
+
+@override
+String toString() {
+  return 'RefinementSession(conversationId: $conversationId, history: $history)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RefinementSessionCopyWith<$Res> implements $RefinementSessionCopyWith<$Res> {
+  factory _$RefinementSessionCopyWith(_RefinementSession value, $Res Function(_RefinementSession) _then) = __$RefinementSessionCopyWithImpl;
+@override @useResult
+$Res call({
+@JsonKey(name: 'conversation_id') String conversationId, List<RefinementTurn> history
+});
+
+
+
+
+}
+/// @nodoc
+class __$RefinementSessionCopyWithImpl<$Res>
+    implements _$RefinementSessionCopyWith<$Res> {
+  __$RefinementSessionCopyWithImpl(this._self, this._then);
+
+  final _RefinementSession _self;
+  final $Res Function(_RefinementSession) _then;
+
+/// Create a copy of RefinementSession
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? conversationId = null,Object? history = null,}) {
+  return _then(_RefinementSession(
+conversationId: null == conversationId ? _self.conversationId : conversationId // ignore: cast_nullable_to_non_nullable
+as String,history: null == history ? _self._history : history // ignore: cast_nullable_to_non_nullable
+as List<RefinementTurn>,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$WeeklyWizardResponse {
 
- List<GeneratedScheduleItem> get items; WizardSource get source;@JsonKey(name: 'followup_questions') List<FollowupQuestion> get followupQuestions;
+ List<GeneratedScheduleItem> get items; WizardSource get source;@JsonKey(name: 'followup_questions') List<FollowupQuestion> get followupQuestions; List<ConflictReport> get conflicts;@JsonKey(name: 'diff_summary') String? get diffSummary;@JsonKey(name: 'conversation_id') String? get conversationId; int get turn; List<String> get warnings;
 /// Create a copy of WeeklyWizardResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1433,16 +1986,16 @@ $WeeklyWizardResponseCopyWith<WeeklyWizardResponse> get copyWith => _$WeeklyWiza
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WeeklyWizardResponse&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.source, source) || other.source == source)&&const DeepCollectionEquality().equals(other.followupQuestions, followupQuestions));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WeeklyWizardResponse&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.source, source) || other.source == source)&&const DeepCollectionEquality().equals(other.followupQuestions, followupQuestions)&&const DeepCollectionEquality().equals(other.conflicts, conflicts)&&(identical(other.diffSummary, diffSummary) || other.diffSummary == diffSummary)&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&(identical(other.turn, turn) || other.turn == turn)&&const DeepCollectionEquality().equals(other.warnings, warnings));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),source,const DeepCollectionEquality().hash(followupQuestions));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),source,const DeepCollectionEquality().hash(followupQuestions),const DeepCollectionEquality().hash(conflicts),diffSummary,conversationId,turn,const DeepCollectionEquality().hash(warnings));
 
 @override
 String toString() {
-  return 'WeeklyWizardResponse(items: $items, source: $source, followupQuestions: $followupQuestions)';
+  return 'WeeklyWizardResponse(items: $items, source: $source, followupQuestions: $followupQuestions, conflicts: $conflicts, diffSummary: $diffSummary, conversationId: $conversationId, turn: $turn, warnings: $warnings)';
 }
 
 
@@ -1453,7 +2006,7 @@ abstract mixin class $WeeklyWizardResponseCopyWith<$Res>  {
   factory $WeeklyWizardResponseCopyWith(WeeklyWizardResponse value, $Res Function(WeeklyWizardResponse) _then) = _$WeeklyWizardResponseCopyWithImpl;
 @useResult
 $Res call({
- List<GeneratedScheduleItem> items, WizardSource source,@JsonKey(name: 'followup_questions') List<FollowupQuestion> followupQuestions
+ List<GeneratedScheduleItem> items, WizardSource source,@JsonKey(name: 'followup_questions') List<FollowupQuestion> followupQuestions, List<ConflictReport> conflicts,@JsonKey(name: 'diff_summary') String? diffSummary,@JsonKey(name: 'conversation_id') String? conversationId, int turn, List<String> warnings
 });
 
 
@@ -1470,12 +2023,17 @@ class _$WeeklyWizardResponseCopyWithImpl<$Res>
 
 /// Create a copy of WeeklyWizardResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? source = null,Object? followupQuestions = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? source = null,Object? followupQuestions = null,Object? conflicts = null,Object? diffSummary = freezed,Object? conversationId = freezed,Object? turn = null,Object? warnings = null,}) {
   return _then(_self.copyWith(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<GeneratedScheduleItem>,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as WizardSource,followupQuestions: null == followupQuestions ? _self.followupQuestions : followupQuestions // ignore: cast_nullable_to_non_nullable
-as List<FollowupQuestion>,
+as List<FollowupQuestion>,conflicts: null == conflicts ? _self.conflicts : conflicts // ignore: cast_nullable_to_non_nullable
+as List<ConflictReport>,diffSummary: freezed == diffSummary ? _self.diffSummary : diffSummary // ignore: cast_nullable_to_non_nullable
+as String?,conversationId: freezed == conversationId ? _self.conversationId : conversationId // ignore: cast_nullable_to_non_nullable
+as String?,turn: null == turn ? _self.turn : turn // ignore: cast_nullable_to_non_nullable
+as int,warnings: null == warnings ? _self.warnings : warnings // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -1557,10 +2115,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GeneratedScheduleItem> items,  WizardSource source, @JsonKey(name: 'followup_questions')  List<FollowupQuestion> followupQuestions)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GeneratedScheduleItem> items,  WizardSource source, @JsonKey(name: 'followup_questions')  List<FollowupQuestion> followupQuestions,  List<ConflictReport> conflicts, @JsonKey(name: 'diff_summary')  String? diffSummary, @JsonKey(name: 'conversation_id')  String? conversationId,  int turn,  List<String> warnings)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WeeklyWizardResponse() when $default != null:
-return $default(_that.items,_that.source,_that.followupQuestions);case _:
+return $default(_that.items,_that.source,_that.followupQuestions,_that.conflicts,_that.diffSummary,_that.conversationId,_that.turn,_that.warnings);case _:
   return orElse();
 
 }
@@ -1578,10 +2136,10 @@ return $default(_that.items,_that.source,_that.followupQuestions);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GeneratedScheduleItem> items,  WizardSource source, @JsonKey(name: 'followup_questions')  List<FollowupQuestion> followupQuestions)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GeneratedScheduleItem> items,  WizardSource source, @JsonKey(name: 'followup_questions')  List<FollowupQuestion> followupQuestions,  List<ConflictReport> conflicts, @JsonKey(name: 'diff_summary')  String? diffSummary, @JsonKey(name: 'conversation_id')  String? conversationId,  int turn,  List<String> warnings)  $default,) {final _that = this;
 switch (_that) {
 case _WeeklyWizardResponse():
-return $default(_that.items,_that.source,_that.followupQuestions);}
+return $default(_that.items,_that.source,_that.followupQuestions,_that.conflicts,_that.diffSummary,_that.conversationId,_that.turn,_that.warnings);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -1595,10 +2153,10 @@ return $default(_that.items,_that.source,_that.followupQuestions);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GeneratedScheduleItem> items,  WizardSource source, @JsonKey(name: 'followup_questions')  List<FollowupQuestion> followupQuestions)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GeneratedScheduleItem> items,  WizardSource source, @JsonKey(name: 'followup_questions')  List<FollowupQuestion> followupQuestions,  List<ConflictReport> conflicts, @JsonKey(name: 'diff_summary')  String? diffSummary, @JsonKey(name: 'conversation_id')  String? conversationId,  int turn,  List<String> warnings)?  $default,) {final _that = this;
 switch (_that) {
 case _WeeklyWizardResponse() when $default != null:
-return $default(_that.items,_that.source,_that.followupQuestions);case _:
+return $default(_that.items,_that.source,_that.followupQuestions,_that.conflicts,_that.diffSummary,_that.conversationId,_that.turn,_that.warnings);case _:
   return null;
 
 }
@@ -1610,7 +2168,7 @@ return $default(_that.items,_that.source,_that.followupQuestions);case _:
 @JsonSerializable()
 
 class _WeeklyWizardResponse implements WeeklyWizardResponse {
-  const _WeeklyWizardResponse({required final  List<GeneratedScheduleItem> items, required this.source, @JsonKey(name: 'followup_questions') final  List<FollowupQuestion> followupQuestions = const <FollowupQuestion>[]}): _items = items,_followupQuestions = followupQuestions;
+  const _WeeklyWizardResponse({required final  List<GeneratedScheduleItem> items, required this.source, @JsonKey(name: 'followup_questions') final  List<FollowupQuestion> followupQuestions = const <FollowupQuestion>[], final  List<ConflictReport> conflicts = const <ConflictReport>[], @JsonKey(name: 'diff_summary') this.diffSummary, @JsonKey(name: 'conversation_id') this.conversationId, this.turn = 0, final  List<String> warnings = const <String>[]}): _items = items,_followupQuestions = followupQuestions,_conflicts = conflicts,_warnings = warnings;
   factory _WeeklyWizardResponse.fromJson(Map<String, dynamic> json) => _$WeeklyWizardResponseFromJson(json);
 
  final  List<GeneratedScheduleItem> _items;
@@ -1628,6 +2186,23 @@ class _WeeklyWizardResponse implements WeeklyWizardResponse {
   return EqualUnmodifiableListView(_followupQuestions);
 }
 
+ final  List<ConflictReport> _conflicts;
+@override@JsonKey() List<ConflictReport> get conflicts {
+  if (_conflicts is EqualUnmodifiableListView) return _conflicts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_conflicts);
+}
+
+@override@JsonKey(name: 'diff_summary') final  String? diffSummary;
+@override@JsonKey(name: 'conversation_id') final  String? conversationId;
+@override@JsonKey() final  int turn;
+ final  List<String> _warnings;
+@override@JsonKey() List<String> get warnings {
+  if (_warnings is EqualUnmodifiableListView) return _warnings;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_warnings);
+}
+
 
 /// Create a copy of WeeklyWizardResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -1642,16 +2217,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WeeklyWizardResponse&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.source, source) || other.source == source)&&const DeepCollectionEquality().equals(other._followupQuestions, _followupQuestions));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WeeklyWizardResponse&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.source, source) || other.source == source)&&const DeepCollectionEquality().equals(other._followupQuestions, _followupQuestions)&&const DeepCollectionEquality().equals(other._conflicts, _conflicts)&&(identical(other.diffSummary, diffSummary) || other.diffSummary == diffSummary)&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&(identical(other.turn, turn) || other.turn == turn)&&const DeepCollectionEquality().equals(other._warnings, _warnings));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),source,const DeepCollectionEquality().hash(_followupQuestions));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),source,const DeepCollectionEquality().hash(_followupQuestions),const DeepCollectionEquality().hash(_conflicts),diffSummary,conversationId,turn,const DeepCollectionEquality().hash(_warnings));
 
 @override
 String toString() {
-  return 'WeeklyWizardResponse(items: $items, source: $source, followupQuestions: $followupQuestions)';
+  return 'WeeklyWizardResponse(items: $items, source: $source, followupQuestions: $followupQuestions, conflicts: $conflicts, diffSummary: $diffSummary, conversationId: $conversationId, turn: $turn, warnings: $warnings)';
 }
 
 
@@ -1662,7 +2237,7 @@ abstract mixin class _$WeeklyWizardResponseCopyWith<$Res> implements $WeeklyWiza
   factory _$WeeklyWizardResponseCopyWith(_WeeklyWizardResponse value, $Res Function(_WeeklyWizardResponse) _then) = __$WeeklyWizardResponseCopyWithImpl;
 @override @useResult
 $Res call({
- List<GeneratedScheduleItem> items, WizardSource source,@JsonKey(name: 'followup_questions') List<FollowupQuestion> followupQuestions
+ List<GeneratedScheduleItem> items, WizardSource source,@JsonKey(name: 'followup_questions') List<FollowupQuestion> followupQuestions, List<ConflictReport> conflicts,@JsonKey(name: 'diff_summary') String? diffSummary,@JsonKey(name: 'conversation_id') String? conversationId, int turn, List<String> warnings
 });
 
 
@@ -1679,12 +2254,17 @@ class __$WeeklyWizardResponseCopyWithImpl<$Res>
 
 /// Create a copy of WeeklyWizardResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? source = null,Object? followupQuestions = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? source = null,Object? followupQuestions = null,Object? conflicts = null,Object? diffSummary = freezed,Object? conversationId = freezed,Object? turn = null,Object? warnings = null,}) {
   return _then(_WeeklyWizardResponse(
 items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
 as List<GeneratedScheduleItem>,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as WizardSource,followupQuestions: null == followupQuestions ? _self._followupQuestions : followupQuestions // ignore: cast_nullable_to_non_nullable
-as List<FollowupQuestion>,
+as List<FollowupQuestion>,conflicts: null == conflicts ? _self._conflicts : conflicts // ignore: cast_nullable_to_non_nullable
+as List<ConflictReport>,diffSummary: freezed == diffSummary ? _self.diffSummary : diffSummary // ignore: cast_nullable_to_non_nullable
+as String?,conversationId: freezed == conversationId ? _self.conversationId : conversationId // ignore: cast_nullable_to_non_nullable
+as String?,turn: null == turn ? _self.turn : turn // ignore: cast_nullable_to_non_nullable
+as int,warnings: null == warnings ? _self._warnings : warnings // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

@@ -5,7 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:routinemon/core/db/app_database.dart';
 import 'package:routinemon/core/native/disturbance_api.g.dart';
+import 'package:routinemon/core/native/usage_api.g.dart';
+import 'package:routinemon/core/native/usage_bridge.dart';
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
+import 'package:routinemon/features/disturbance/data/usage_log_repository.dart';
 import 'package:routinemon/features/disturbance/domain/disturbance_intervention.dart';
 import 'package:routinemon/features/schedule/application/active_schedule_provider.dart';
 import 'package:routinemon/features/schedule/application/schedule_notifier.dart';
@@ -40,10 +43,19 @@ class DisturbanceController with WidgetsBindingObserver {
   final DisturbanceApi _api;
   final DisturbanceIntervention _intervention;
 
+  /// 본인 패키지 — 사용 기록에서 항상 제외 (ADR 0004).
+  static const _selfPackage = 'com.starwinde.routinemon';
+
   Timer? _periodicLockTimer;
   Timer? _periodicVibrateTimer;
   bool _started = false;
   bool _serviceRunning = false;
+
+  /// 마지막 paused 시각. resumed 에서 사용 통계 윈도 시작점으로 사용.
+  DateTime? _pausedAt;
+
+  /// paused 시점의 active 일정 id (resumed 시 같은 일정 컨텍스트로 기록).
+  int? _pausedScheduleId;
 
   /// Attaches the controller to widget lifecycle. Idempotent — repeated
   /// invocations from rebuilds do not register the observer multiple times.
@@ -95,11 +107,19 @@ class DisturbanceController with WidgetsBindingObserver {
     if (schedule == null) return;
     if (!schedule.allowDisruption) return;
 
+    // ADR 0004: 모든 단계가 paused 시점을 기록 (resumed 에서 사용 통계 수집).
+    _pausedAt = DateTime.now();
+    _pausedScheduleId = schedule.id;
+
     final level = DisturbanceLevel.fromInt(schedule.disruptionIntensity);
     final action = _intervention.onActiveUsage(DateTime.now(), level);
     debugPrint(
         '[Disturbance] level=$level action=$action vibrate=${action?.vibrateMs} launchHome=${action?.launchHome}');
     if (action == null) return;
+
+    // L0 = observe-only — 그 외 액션 모두 0/false. 아래 분기는 자연 스킵되지만
+    // 명시 early-return 으로 가독성 유지.
+    if (level == DisturbanceLevel.l0) return;
 
     if (!_serviceRunning) {
       await _api.startDisturbanceService();
@@ -125,6 +145,23 @@ class DisturbanceController with WidgetsBindingObserver {
       final all = await repo.watchAllActive(user.id).first;
       activeSchedule = findCurrentActiveSchedule(all, DateTime.now());
     }
+
+    // ADR 0004: paused→resumed 사이의 사용 통계를 누적. 모든 단계 공통.
+    final pausedAt = _pausedAt;
+    final pausedScheduleId = _pausedScheduleId;
+    _pausedAt = null;
+    _pausedScheduleId = null;
+    debugPrint(
+      '[Disturbance] resumed pausedAt=$pausedAt pausedScheduleId=$pausedScheduleId user=${user?.id}',
+    );
+    if (user != null && pausedAt != null) {
+      await _recordUsage(
+        userId: user.id,
+        scheduleId: pausedScheduleId,
+        rangeStart: pausedAt,
+        rangeEnd: DateTime.now(),
+      );
+    }
     if (activeSchedule == null) {
       _cancelPeriodicTimers();
       _intervention.resetForNewSchedule();
@@ -133,6 +170,53 @@ class DisturbanceController with WidgetsBindingObserver {
         await _api.stopDisturbanceService();
         _serviceRunning = false;
       }
+    }
+  }
+
+  /// paused→resumed 사이의 `queryUsageStats` 결과를 `usage_logs` 에 누적.
+  /// 본인 패키지 [_selfPackage] 는 항상 제외. native API 실패는 swallow
+  /// (사용자 차단 금지).
+  Future<void> _recordUsage({
+    required String userId,
+    int? scheduleId,
+    required DateTime rangeStart,
+    required DateTime rangeEnd,
+  }) async {
+    if (rangeEnd.isBefore(rangeStart)) return;
+    try {
+      // Padding ±2분 — UsageStatsManager 가 짧은 윈도에서 ACTIVITY_PAUSED
+      // 이벤트를 누락하는 케이스 대응 (페어 매칭 보장).
+      const pad = Duration(minutes: 2);
+      final queryStart = rangeStart.subtract(pad);
+      final queryEnd = rangeEnd.add(pad);
+      final usageApi = ref.read(usageApiProvider);
+      final stats = await usageApi.queryUsageStats(
+        queryStart.millisecondsSinceEpoch,
+        queryEnd.millisecondsSinceEpoch,
+      );
+      debugPrint('[Usage] queryUsageStats returned ${stats.length} entries');
+      final useful = <AppUsageInfo>[
+        for (final s in stats)
+          if (s.totalTimeInForeground > 0 && s.packageName != _selfPackage) s,
+      ];
+      debugPrint('[Usage] useful=${useful.length} after self-filter');
+      if (useful.isEmpty) return;
+      final repo = ref.read(usageLogRepositoryProvider);
+      for (final s in useful) {
+        await repo.insert(
+          userId: userId,
+          scheduleId: scheduleId,
+          packageName: s.packageName,
+          totalMs: s.totalTimeInForeground,
+          rangeStart: rangeStart,
+          rangeEnd: rangeEnd,
+        );
+      }
+      debugPrint(
+        '[Usage] recorded ${useful.length} packages for schedule=$scheduleId',
+      );
+    } on Exception catch (e) {
+      debugPrint('[Usage] queryUsageStats failed (swallowed): $e');
     }
   }
 

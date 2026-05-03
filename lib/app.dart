@@ -13,6 +13,8 @@ import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/auth/presentation/login_page.dart';
 import 'package:routinemon/features/data_export/presentation/data_export_page.dart';
 import 'package:routinemon/features/disturbance/application/disturbance_controller.dart';
+import 'package:routinemon/features/disturbance/presentation/usage_history_page.dart';
+import 'package:routinemon/features/disturbance/presentation/usage_log_tile.dart';
 import 'package:routinemon/features/mood/presentation/mood_check_in_tile.dart';
 import 'package:routinemon/features/mood/presentation/mood_history_page.dart';
 import 'package:routinemon/features/onboarding/presentation/egg_hatch_page.dart';
@@ -159,6 +161,10 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const MoodHistoryPage(),
       ),
       GoRoute(
+        path: '/usage/history',
+        builder: (context, state) => const UsageHistoryPage(),
+      ),
+      GoRoute(
         path: '/ai/report',
         builder: (context, state) {
           final period = state.extra as ReportPeriod? ?? ReportPeriod.weekly;
@@ -221,6 +227,7 @@ class _HomePage extends StatelessWidget {
             child: Text('홈 대시보드', style: TextStyle(fontSize: 20)),
           ),
           MoodCheckInTile(),
+          UsageLogTile(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

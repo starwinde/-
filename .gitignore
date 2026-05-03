@@ -56,3 +56,6 @@ server/node_modules/
 # .scratch/ — 로컬 마크다운 이슈 트래커 (git 추적), 예외: 임시 파일은 ignore
 .scratch/*/tmp/
 .scratch/*/scratch/
+
+# Claude Code local state
+.claude/

@@ -256,4 +256,25 @@ class UsageApi {
     ;
     return (pigeonVar_replyValue! as List<Object?>).cast<String>();
   }
+
+  /// 패키지명 → 사람이 읽을 수 있는 앱 라벨 매핑 (PackageManager.loadLabel).
+  /// 미설치/시스템 패키지는 결과 Map 에서 누락 — UI 가 fallback 으로 packageName 사용.
+  Future<Map<String, String>> getAppLabels(List<String> packages) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.routinemon.UsageApi.getAppLabels$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[packages]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return (pigeonVar_replyValue! as Map<Object?, Object?>).cast<String, String>();
+  }
 }

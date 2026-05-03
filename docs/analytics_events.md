@@ -2,7 +2,7 @@
 
 > Source of truth: 이 파일 (PRD §2.22.1)
 > 작성 방식: 페이즈별 incremental (PRD §2.22.2)
-> Last Updated: 2026-04-11
+> Last Updated: 2026-05-03
 
 ---
 
@@ -229,6 +229,36 @@ focus_session_ended (XP 누적) -> pet_evolved
 
 ### Phase 5 — AI Reports + 결제 + 위젯 (예정)
 <!-- paywall_viewed, purchase_initiated, purchase_completed, purchase_failed, trial_started, trial_expired, lite_demoted, weekly_report_viewed, widget_added, auto_schedule_imported, share_intent_processed -->
+
+### Phase 5 — Weekly Wizard v2 (정의됨, 발송 wiring 은 후속, ADR 0001 참조)
+
+#### `wizard_generated`
+- **trigger**: `WeeklyWizardService.generate()` 가 응답 반환 직후 (UI 측에서 호출)
+- **properties**: { path: enum [rule, llm, preset], items_count: int, conflicts_count: int, warnings_count: int, has_past_week_context: bool }
+- **kpi_mapping**: 주간 wizard 채택율, Path A vs B 분포 측정
+- **phase**: 5
+- **sdks**: [posthog, firebase_analytics]
+
+#### `wizard_conflict_detected`
+- **trigger**: `WeeklyWizardResponse.conflicts` 에 항목이 존재할 때, conflict 별 1회 발송
+- **properties**: { kind: enum [time_overlap, existing_overlap, no_break, category_monotony, outside_awake], severity: enum [error, warning] }
+- **kpi_mapping**: 충돌 발생 빈도 → ADR 0002 임계치 튜닝 신호
+- **phase**: 5
+- **sdks**: [posthog]
+
+#### `wizard_enhanced`
+- **trigger**: `WeeklyWizardService.enhance()` 가 LLM 응답으로 성공 반환 시 (Pro 옵트인)
+- **properties**: { objective: enum [diversify_titles, rebalance_load, add_recovery, refine_categories], turn: int, retry_count: int, items_count: int }
+- **kpi_mapping**: Pro 사용자 enhance 채택율, retry 분포
+- **phase**: 5
+- **sdks**: [posthog, firebase_analytics]
+
+#### `wizard_applied`
+- **trigger**: `WizardPreviewPage._apply()` 트랜잭션 성공 직후
+- **properties**: { path: enum [rule, llm, preset], items_count: int, confirm_after_conflict: bool, refinement_turns: int }
+- **kpi_mapping**: wizard funnel 종료 지점 (생성 → 적용)
+- **phase**: 5
+- **sdks**: [posthog, firebase_analytics]
 
 ### Phase 6 — Closed Beta (예정)
 <!-- beta_tester_invited, beta_session, feedback_submitted -->

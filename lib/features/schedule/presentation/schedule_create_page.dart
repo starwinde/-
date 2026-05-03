@@ -317,8 +317,13 @@ class _ScheduleCreatePageState extends ConsumerState<ScheduleCreatePage> {
             const SizedBox(height: 16),
             SwitchListTile(
               title: const Text('할일 (시간 지정 없이 해당 날짜 마감)'),
+              subtitle: _allowDisruption
+                  ? const Text('방해 허용이 켜져 있어 사용할 수 없어요.')
+                  : null,
               value: _isTodo,
-              onChanged: (v) => setState(() => _isTodo = v),
+              onChanged: _allowDisruption
+                  ? null
+                  : (v) => setState(() => _isTodo = v),
             ),
             const SizedBox(height: 8),
             ListTile(
@@ -420,11 +425,24 @@ class _ScheduleCreatePageState extends ConsumerState<ScheduleCreatePage> {
             const SizedBox(height: 16),
             SwitchListTile(
               title: const Text('방해 허용'),
-              subtitle: const Text('일정 중 다른 앱 사용 시 강도별로 개입해요.'),
+              subtitle: Text(
+                _isTodo
+                    ? '할일 모드에서는 사용할 수 없어요.'
+                    : '일정 중 다른 앱 사용 시 강도별로 개입해요.',
+              ),
               value: _allowDisruption,
-              onChanged: _onAllowDisruptionChanged,
+              onChanged: _isTodo ? null : _onAllowDisruptionChanged,
             ),
             if (_allowDisruption) ...[
+              RadioListTile<int>(
+                title: const Text('L0 — 기록만 (방해 없음)'),
+                subtitle: const Text(
+                  '일정 중 다른 앱 사용 시 패키지·시간만 기록합니다.',
+                ),
+                value: 0,
+                groupValue: _disruptionIntensity,
+                onChanged: _onIntensityChanged,
+              ),
               RadioListTile<int>(
                 title: const Text('L1 — 짧은 진동 + 검은 화면 5초'),
                 value: 1,

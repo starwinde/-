@@ -78,6 +78,29 @@ class WizardDraft {
   }
 }
 
+/// Multi-turn refinement 세션. wizard preview 단위로 auto-dispose.
+/// 5턴 상한 + 마지막 2턴 윈도잉 (ADR 0003).
+@riverpod
+class RefinementSessionNotifier extends _$RefinementSessionNotifier {
+  @override
+  RefinementSession? build() => null;
+
+  void start(String conversationId) {
+    state = RefinementSession(conversationId: conversationId);
+  }
+
+  /// turn 추가. session 부재 / 5턴 초과 시 false 반환 (UI 가드).
+  bool tryAppend(RefinementTurn turn) {
+    final cur = state;
+    if (cur == null) return false;
+    if (cur.isFull) return false;
+    state = cur.copyWith(history: [...cur.history, turn]);
+    return true;
+  }
+
+  void reset() => state = null;
+}
+
 /// Holds the in-progress answers for the weekly wizard.
 @riverpod
 class WizardState extends _$WizardState {

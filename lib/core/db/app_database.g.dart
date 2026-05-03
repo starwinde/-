@@ -3470,6 +3470,531 @@ class SessionsCompanion extends UpdateCompanion<Session> {
   }
 }
 
+class $UsageLogsTable extends UsageLogs
+    with TableInfo<$UsageLogsTable, UsageLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UsageLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scheduleIdMeta = const VerificationMeta(
+    'scheduleId',
+  );
+  @override
+  late final GeneratedColumn<int> scheduleId = GeneratedColumn<int>(
+    'schedule_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _packageNameMeta = const VerificationMeta(
+    'packageName',
+  );
+  @override
+  late final GeneratedColumn<String> packageName = GeneratedColumn<String>(
+    'package_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalMsMeta = const VerificationMeta(
+    'totalMs',
+  );
+  @override
+  late final GeneratedColumn<int> totalMs = GeneratedColumn<int>(
+    'total_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rangeStartMeta = const VerificationMeta(
+    'rangeStart',
+  );
+  @override
+  late final GeneratedColumn<DateTime> rangeStart = GeneratedColumn<DateTime>(
+    'range_start',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rangeEndMeta = const VerificationMeta(
+    'rangeEnd',
+  );
+  @override
+  late final GeneratedColumn<DateTime> rangeEnd = GeneratedColumn<DateTime>(
+    'range_end',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _capturedAtMeta = const VerificationMeta(
+    'capturedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> capturedAt = GeneratedColumn<DateTime>(
+    'captured_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    scheduleId,
+    packageName,
+    totalMs,
+    rangeStart,
+    rangeEnd,
+    capturedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'usage_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UsageLog> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('schedule_id')) {
+      context.handle(
+        _scheduleIdMeta,
+        scheduleId.isAcceptableOrUnknown(data['schedule_id']!, _scheduleIdMeta),
+      );
+    }
+    if (data.containsKey('package_name')) {
+      context.handle(
+        _packageNameMeta,
+        packageName.isAcceptableOrUnknown(
+          data['package_name']!,
+          _packageNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_packageNameMeta);
+    }
+    if (data.containsKey('total_ms')) {
+      context.handle(
+        _totalMsMeta,
+        totalMs.isAcceptableOrUnknown(data['total_ms']!, _totalMsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_totalMsMeta);
+    }
+    if (data.containsKey('range_start')) {
+      context.handle(
+        _rangeStartMeta,
+        rangeStart.isAcceptableOrUnknown(data['range_start']!, _rangeStartMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rangeStartMeta);
+    }
+    if (data.containsKey('range_end')) {
+      context.handle(
+        _rangeEndMeta,
+        rangeEnd.isAcceptableOrUnknown(data['range_end']!, _rangeEndMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rangeEndMeta);
+    }
+    if (data.containsKey('captured_at')) {
+      context.handle(
+        _capturedAtMeta,
+        capturedAt.isAcceptableOrUnknown(data['captured_at']!, _capturedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UsageLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UsageLog(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      scheduleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}schedule_id'],
+      ),
+      packageName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}package_name'],
+      )!,
+      totalMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_ms'],
+      )!,
+      rangeStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}range_start'],
+      )!,
+      rangeEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}range_end'],
+      )!,
+      capturedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}captured_at'],
+      )!,
+    );
+  }
+
+  @override
+  $UsageLogsTable createAlias(String alias) {
+    return $UsageLogsTable(attachedDatabase, alias);
+  }
+}
+
+class UsageLog extends DataClass implements Insertable<UsageLog> {
+  final int id;
+
+  /// 소유자 user id (text, supabase auth user id 또는 'local').
+  final String userId;
+
+  /// 어떤 일정 진행 중에 측정됐는지 (FK to schedules.id, nullable —
+  /// 일정 외 시간에 수집된 경우 null).
+  final int? scheduleId;
+
+  /// 안드로이드 패키지명 (예: `com.android.chrome`).
+  final String packageName;
+
+  /// 해당 윈도 안에서 포그라운드로 누적된 시간 (ms).
+  final int totalMs;
+
+  /// 측정 윈도 시작 (paused 시각).
+  final DateTime rangeStart;
+
+  /// 측정 윈도 종료 (resumed 시각).
+  final DateTime rangeEnd;
+
+  /// 행 생성 시각.
+  final DateTime capturedAt;
+  const UsageLog({
+    required this.id,
+    required this.userId,
+    this.scheduleId,
+    required this.packageName,
+    required this.totalMs,
+    required this.rangeStart,
+    required this.rangeEnd,
+    required this.capturedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || scheduleId != null) {
+      map['schedule_id'] = Variable<int>(scheduleId);
+    }
+    map['package_name'] = Variable<String>(packageName);
+    map['total_ms'] = Variable<int>(totalMs);
+    map['range_start'] = Variable<DateTime>(rangeStart);
+    map['range_end'] = Variable<DateTime>(rangeEnd);
+    map['captured_at'] = Variable<DateTime>(capturedAt);
+    return map;
+  }
+
+  UsageLogsCompanion toCompanion(bool nullToAbsent) {
+    return UsageLogsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      scheduleId: scheduleId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scheduleId),
+      packageName: Value(packageName),
+      totalMs: Value(totalMs),
+      rangeStart: Value(rangeStart),
+      rangeEnd: Value(rangeEnd),
+      capturedAt: Value(capturedAt),
+    );
+  }
+
+  factory UsageLog.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UsageLog(
+      id: serializer.fromJson<int>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      scheduleId: serializer.fromJson<int?>(json['scheduleId']),
+      packageName: serializer.fromJson<String>(json['packageName']),
+      totalMs: serializer.fromJson<int>(json['totalMs']),
+      rangeStart: serializer.fromJson<DateTime>(json['rangeStart']),
+      rangeEnd: serializer.fromJson<DateTime>(json['rangeEnd']),
+      capturedAt: serializer.fromJson<DateTime>(json['capturedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'userId': serializer.toJson<String>(userId),
+      'scheduleId': serializer.toJson<int?>(scheduleId),
+      'packageName': serializer.toJson<String>(packageName),
+      'totalMs': serializer.toJson<int>(totalMs),
+      'rangeStart': serializer.toJson<DateTime>(rangeStart),
+      'rangeEnd': serializer.toJson<DateTime>(rangeEnd),
+      'capturedAt': serializer.toJson<DateTime>(capturedAt),
+    };
+  }
+
+  UsageLog copyWith({
+    int? id,
+    String? userId,
+    Value<int?> scheduleId = const Value.absent(),
+    String? packageName,
+    int? totalMs,
+    DateTime? rangeStart,
+    DateTime? rangeEnd,
+    DateTime? capturedAt,
+  }) => UsageLog(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    scheduleId: scheduleId.present ? scheduleId.value : this.scheduleId,
+    packageName: packageName ?? this.packageName,
+    totalMs: totalMs ?? this.totalMs,
+    rangeStart: rangeStart ?? this.rangeStart,
+    rangeEnd: rangeEnd ?? this.rangeEnd,
+    capturedAt: capturedAt ?? this.capturedAt,
+  );
+  UsageLog copyWithCompanion(UsageLogsCompanion data) {
+    return UsageLog(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      scheduleId: data.scheduleId.present
+          ? data.scheduleId.value
+          : this.scheduleId,
+      packageName: data.packageName.present
+          ? data.packageName.value
+          : this.packageName,
+      totalMs: data.totalMs.present ? data.totalMs.value : this.totalMs,
+      rangeStart: data.rangeStart.present
+          ? data.rangeStart.value
+          : this.rangeStart,
+      rangeEnd: data.rangeEnd.present ? data.rangeEnd.value : this.rangeEnd,
+      capturedAt: data.capturedAt.present
+          ? data.capturedAt.value
+          : this.capturedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UsageLog(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('scheduleId: $scheduleId, ')
+          ..write('packageName: $packageName, ')
+          ..write('totalMs: $totalMs, ')
+          ..write('rangeStart: $rangeStart, ')
+          ..write('rangeEnd: $rangeEnd, ')
+          ..write('capturedAt: $capturedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    scheduleId,
+    packageName,
+    totalMs,
+    rangeStart,
+    rangeEnd,
+    capturedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UsageLog &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.scheduleId == this.scheduleId &&
+          other.packageName == this.packageName &&
+          other.totalMs == this.totalMs &&
+          other.rangeStart == this.rangeStart &&
+          other.rangeEnd == this.rangeEnd &&
+          other.capturedAt == this.capturedAt);
+}
+
+class UsageLogsCompanion extends UpdateCompanion<UsageLog> {
+  final Value<int> id;
+  final Value<String> userId;
+  final Value<int?> scheduleId;
+  final Value<String> packageName;
+  final Value<int> totalMs;
+  final Value<DateTime> rangeStart;
+  final Value<DateTime> rangeEnd;
+  final Value<DateTime> capturedAt;
+  const UsageLogsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.scheduleId = const Value.absent(),
+    this.packageName = const Value.absent(),
+    this.totalMs = const Value.absent(),
+    this.rangeStart = const Value.absent(),
+    this.rangeEnd = const Value.absent(),
+    this.capturedAt = const Value.absent(),
+  });
+  UsageLogsCompanion.insert({
+    this.id = const Value.absent(),
+    required String userId,
+    this.scheduleId = const Value.absent(),
+    required String packageName,
+    required int totalMs,
+    required DateTime rangeStart,
+    required DateTime rangeEnd,
+    this.capturedAt = const Value.absent(),
+  }) : userId = Value(userId),
+       packageName = Value(packageName),
+       totalMs = Value(totalMs),
+       rangeStart = Value(rangeStart),
+       rangeEnd = Value(rangeEnd);
+  static Insertable<UsageLog> custom({
+    Expression<int>? id,
+    Expression<String>? userId,
+    Expression<int>? scheduleId,
+    Expression<String>? packageName,
+    Expression<int>? totalMs,
+    Expression<DateTime>? rangeStart,
+    Expression<DateTime>? rangeEnd,
+    Expression<DateTime>? capturedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (scheduleId != null) 'schedule_id': scheduleId,
+      if (packageName != null) 'package_name': packageName,
+      if (totalMs != null) 'total_ms': totalMs,
+      if (rangeStart != null) 'range_start': rangeStart,
+      if (rangeEnd != null) 'range_end': rangeEnd,
+      if (capturedAt != null) 'captured_at': capturedAt,
+    });
+  }
+
+  UsageLogsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? userId,
+    Value<int?>? scheduleId,
+    Value<String>? packageName,
+    Value<int>? totalMs,
+    Value<DateTime>? rangeStart,
+    Value<DateTime>? rangeEnd,
+    Value<DateTime>? capturedAt,
+  }) {
+    return UsageLogsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      scheduleId: scheduleId ?? this.scheduleId,
+      packageName: packageName ?? this.packageName,
+      totalMs: totalMs ?? this.totalMs,
+      rangeStart: rangeStart ?? this.rangeStart,
+      rangeEnd: rangeEnd ?? this.rangeEnd,
+      capturedAt: capturedAt ?? this.capturedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (scheduleId.present) {
+      map['schedule_id'] = Variable<int>(scheduleId.value);
+    }
+    if (packageName.present) {
+      map['package_name'] = Variable<String>(packageName.value);
+    }
+    if (totalMs.present) {
+      map['total_ms'] = Variable<int>(totalMs.value);
+    }
+    if (rangeStart.present) {
+      map['range_start'] = Variable<DateTime>(rangeStart.value);
+    }
+    if (rangeEnd.present) {
+      map['range_end'] = Variable<DateTime>(rangeEnd.value);
+    }
+    if (capturedAt.present) {
+      map['captured_at'] = Variable<DateTime>(capturedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UsageLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('scheduleId: $scheduleId, ')
+          ..write('packageName: $packageName, ')
+          ..write('totalMs: $totalMs, ')
+          ..write('rangeStart: $rangeStart, ')
+          ..write('rangeEnd: $rangeEnd, ')
+          ..write('capturedAt: $capturedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3478,6 +4003,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DailyScoresTable dailyScores = $DailyScoresTable(this);
   late final $OutboxTable outbox = $OutboxTable(this);
   late final $SessionsTable sessions = $SessionsTable(this);
+  late final $UsageLogsTable usageLogs = $UsageLogsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3488,6 +4014,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     dailyScores,
     outbox,
     sessions,
+    usageLogs,
   ];
 }
 
@@ -5126,6 +5653,259 @@ typedef $$SessionsTableProcessedTableManager =
       Session,
       PrefetchHooks Function()
     >;
+typedef $$UsageLogsTableCreateCompanionBuilder =
+    UsageLogsCompanion Function({
+      Value<int> id,
+      required String userId,
+      Value<int?> scheduleId,
+      required String packageName,
+      required int totalMs,
+      required DateTime rangeStart,
+      required DateTime rangeEnd,
+      Value<DateTime> capturedAt,
+    });
+typedef $$UsageLogsTableUpdateCompanionBuilder =
+    UsageLogsCompanion Function({
+      Value<int> id,
+      Value<String> userId,
+      Value<int?> scheduleId,
+      Value<String> packageName,
+      Value<int> totalMs,
+      Value<DateTime> rangeStart,
+      Value<DateTime> rangeEnd,
+      Value<DateTime> capturedAt,
+    });
+
+class $$UsageLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $UsageLogsTable> {
+  $$UsageLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get scheduleId => $composableBuilder(
+    column: $table.scheduleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get packageName => $composableBuilder(
+    column: $table.packageName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalMs => $composableBuilder(
+    column: $table.totalMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get rangeStart => $composableBuilder(
+    column: $table.rangeStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get rangeEnd => $composableBuilder(
+    column: $table.rangeEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UsageLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $UsageLogsTable> {
+  $$UsageLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get scheduleId => $composableBuilder(
+    column: $table.scheduleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get packageName => $composableBuilder(
+    column: $table.packageName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalMs => $composableBuilder(
+    column: $table.totalMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get rangeStart => $composableBuilder(
+    column: $table.rangeStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get rangeEnd => $composableBuilder(
+    column: $table.rangeEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UsageLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UsageLogsTable> {
+  $$UsageLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<int> get scheduleId => $composableBuilder(
+    column: $table.scheduleId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get packageName => $composableBuilder(
+    column: $table.packageName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalMs =>
+      $composableBuilder(column: $table.totalMs, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get rangeStart => $composableBuilder(
+    column: $table.rangeStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get rangeEnd =>
+      $composableBuilder(column: $table.rangeEnd, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get capturedAt => $composableBuilder(
+    column: $table.capturedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$UsageLogsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UsageLogsTable,
+          UsageLog,
+          $$UsageLogsTableFilterComposer,
+          $$UsageLogsTableOrderingComposer,
+          $$UsageLogsTableAnnotationComposer,
+          $$UsageLogsTableCreateCompanionBuilder,
+          $$UsageLogsTableUpdateCompanionBuilder,
+          (UsageLog, BaseReferences<_$AppDatabase, $UsageLogsTable, UsageLog>),
+          UsageLog,
+          PrefetchHooks Function()
+        > {
+  $$UsageLogsTableTableManager(_$AppDatabase db, $UsageLogsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UsageLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UsageLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UsageLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<int?> scheduleId = const Value.absent(),
+                Value<String> packageName = const Value.absent(),
+                Value<int> totalMs = const Value.absent(),
+                Value<DateTime> rangeStart = const Value.absent(),
+                Value<DateTime> rangeEnd = const Value.absent(),
+                Value<DateTime> capturedAt = const Value.absent(),
+              }) => UsageLogsCompanion(
+                id: id,
+                userId: userId,
+                scheduleId: scheduleId,
+                packageName: packageName,
+                totalMs: totalMs,
+                rangeStart: rangeStart,
+                rangeEnd: rangeEnd,
+                capturedAt: capturedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String userId,
+                Value<int?> scheduleId = const Value.absent(),
+                required String packageName,
+                required int totalMs,
+                required DateTime rangeStart,
+                required DateTime rangeEnd,
+                Value<DateTime> capturedAt = const Value.absent(),
+              }) => UsageLogsCompanion.insert(
+                id: id,
+                userId: userId,
+                scheduleId: scheduleId,
+                packageName: packageName,
+                totalMs: totalMs,
+                rangeStart: rangeStart,
+                rangeEnd: rangeEnd,
+                capturedAt: capturedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$UsageLogsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UsageLogsTable,
+      UsageLog,
+      $$UsageLogsTableFilterComposer,
+      $$UsageLogsTableOrderingComposer,
+      $$UsageLogsTableAnnotationComposer,
+      $$UsageLogsTableCreateCompanionBuilder,
+      $$UsageLogsTableUpdateCompanionBuilder,
+      (UsageLog, BaseReferences<_$AppDatabase, $UsageLogsTable, UsageLog>),
+      UsageLog,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5139,4 +5919,6 @@ class $AppDatabaseManager {
       $$OutboxTableTableManager(_db, _db.outbox);
   $$SessionsTableTableManager get sessions =>
       $$SessionsTableTableManager(_db, _db.sessions);
+  $$UsageLogsTableTableManager get usageLogs =>
+      $$UsageLogsTableTableManager(_db, _db.usageLogs);
 }

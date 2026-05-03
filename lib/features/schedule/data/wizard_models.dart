@@ -1,7 +1,12 @@
 // ignore_for_file: invalid_annotation_target
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:routinemon/features/schedule/domain/conflict_report.dart';
+import 'package:routinemon/features/schedule/domain/lifestyle_enums.dart';
 import 'package:routinemon/features/schedule/domain/schedule_category.dart';
+
+export 'package:routinemon/features/schedule/domain/conflict_report.dart';
+export 'package:routinemon/features/schedule/domain/lifestyle_enums.dart';
 
 part 'wizard_models.freezed.dart';
 part 'wizard_models.g.dart';
@@ -50,25 +55,8 @@ enum FreeTimeMin {
   @JsonValue('threeHoursPlus') threeHoursPlus,
 }
 
-enum WakeTime {
-  @JsonValue('early_5_7') early57,
-  @JsonValue('morning_7_9') morning79,
-  @JsonValue('late_9_11') late911,
-  @JsonValue('variable') variable,
-}
-
-enum SleepTime {
-  @JsonValue('early_21_23') early2123,
-  @JsonValue('midnight_23_1') midnight231,
-  @JsonValue('late_1_3') late13,
-  @JsonValue('variable') variable,
-}
-
-enum Chronotype {
-  @JsonValue('morning') morning,
-  @JsonValue('middle') middle,
-  @JsonValue('evening') evening,
-}
+// WakeTime, SleepTime, Chronotype 는 domain/lifestyle_enums.dart 로 이전 (도메인 의존성 방향 §3.2).
+// 본 파일 상단 export 로 기존 import 호환 유지.
 
 enum WorkHours {
   @JsonValue('nine_to_six') nineToSix,
@@ -110,8 +98,17 @@ enum GoalFocus {
 }
 
 enum WizardSource {
+  @JsonValue('rule') rule,
   @JsonValue('llm') llm,
   @JsonValue('preset') preset,
+}
+
+@JsonEnum(alwaysCreate: true)
+enum EnhanceObjective {
+  @JsonValue('diversify_titles') diversifyTitles,
+  @JsonValue('rebalance_load') rebalanceLoad,
+  @JsonValue('add_recovery') addRecovery,
+  @JsonValue('refine_categories') refineCategories,
 }
 
 @freezed
@@ -170,6 +167,8 @@ sealed class GeneratedScheduleItem with _$GeneratedScheduleItem {
     @JsonKey(fromJson: _catFromJson, toJson: _catToJson)
     required ScheduleCategory category,
     @Default([]) List<String> tags,
+    @Default(WizardSource.rule) WizardSource source,
+    double? confidence,
   }) = _GeneratedScheduleItem;
 
   /// Resolves this item's startTime into an absolute DateTime given
@@ -220,6 +219,44 @@ sealed class FollowupQuestion with _$FollowupQuestion {
 }
 
 @freezed
+sealed class RefinementTurn with _$RefinementTurn {
+  const factory RefinementTurn({
+    required int turn,
+    required List<GeneratedScheduleItem> items,
+    @JsonKey(name: 'followup_answers')
+    @Default(<String, String>{}) Map<String, String> followupAnswers,
+    @JsonKey(name: 'diff_summary') String? diffSummary,
+    required DateTime timestamp,
+  }) = _RefinementTurn;
+
+  factory RefinementTurn.fromJson(Map<String, dynamic> json) =>
+      _$RefinementTurnFromJson(json);
+}
+
+@freezed
+sealed class RefinementSession with _$RefinementSession {
+  const RefinementSession._();
+
+  const factory RefinementSession({
+    @JsonKey(name: 'conversation_id') required String conversationId,
+    @Default(<RefinementTurn>[]) List<RefinementTurn> history,
+  }) = _RefinementSession;
+
+  /// Issue 07 / ADR 0003 — gemma-4-e4b 8192 maxTokens 안전선.
+  static const int maxTurns = 5;
+
+  int get turnCount => history.length;
+  bool get isFull => turnCount >= maxTurns;
+
+  /// 마지막 2턴만 윈도잉 (토큰 예산 ≤ 8KB 보호).
+  List<RefinementTurn> get window =>
+      history.length <= 2 ? history : history.sublist(history.length - 2);
+
+  factory RefinementSession.fromJson(Map<String, dynamic> json) =>
+      _$RefinementSessionFromJson(json);
+}
+
+@freezed
 sealed class WeeklyWizardResponse with _$WeeklyWizardResponse {
   const factory WeeklyWizardResponse({
     required List<GeneratedScheduleItem> items,
@@ -227,6 +264,11 @@ sealed class WeeklyWizardResponse with _$WeeklyWizardResponse {
     @JsonKey(name: 'followup_questions')
     @Default(<FollowupQuestion>[])
     List<FollowupQuestion> followupQuestions,
+    @Default(<ConflictReport>[]) List<ConflictReport> conflicts,
+    @JsonKey(name: 'diff_summary') String? diffSummary,
+    @JsonKey(name: 'conversation_id') String? conversationId,
+    @Default(0) int turn,
+    @Default(<String>[]) List<String> warnings,
   }) = _WeeklyWizardResponse;
 
   factory WeeklyWizardResponse.fromJson(Map<String, dynamic> json) =>

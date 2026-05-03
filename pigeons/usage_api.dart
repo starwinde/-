@@ -23,4 +23,8 @@ abstract class UsageApi {
   void openUsageSettings();
   List<AppUsageInfo> queryUsageStats(int startTime, int endTime);
   List<String> getInstalledPackages();
+
+  /// 패키지명 → 사람이 읽을 수 있는 앱 라벨 매핑 (PackageManager.loadLabel).
+  /// 미설치/시스템 패키지는 결과 Map 에서 누락 — UI 가 fallback 으로 packageName 사용.
+  Map<String, String> getAppLabels(List<String> packages);
 }

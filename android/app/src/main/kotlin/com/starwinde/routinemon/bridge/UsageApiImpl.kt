@@ -24,4 +24,7 @@ class UsageApiImpl(private val context: Context) : UsageApi {
     }
 
     override fun getInstalledPackages(): List<String> = collector.getInstalledPackages()
+
+    override fun getAppLabels(packages: List<String>): Map<String, String> =
+        collector.getAppLabels(packages)
 }

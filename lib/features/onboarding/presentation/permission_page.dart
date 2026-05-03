@@ -23,7 +23,7 @@ class PermissionPage extends ConsumerStatefulWidget {
 
 class _PermissionPageState extends ConsumerState<PermissionPage>
     with WidgetsBindingObserver {
-  bool _checking = false;
+  bool _autoProgressed = false; // 자동 onComplete 단발성 가드
 
   @override
   void initState() {
@@ -40,33 +40,27 @@ class _PermissionPageState extends ConsumerState<PermissionPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(_recheckPermission());
-    }
-  }
-
-  Future<void> _recheckPermission() async {
-    if (_checking) return;
-    setState(() => _checking = true);
-    try {
-      final hasPermission =
-          await ref.read(hasUsagePermissionProvider.future);
-      if (hasPermission && mounted) {
-        if (widget.onComplete != null) {
-          widget.onComplete!();
-        } else {
-          context.go('/');
-        }
-      }
-    } on Exception catch (_) {
-      // 크래시 방지 (DoD #2)
-    } finally {
-      if (mounted) setState(() => _checking = false);
+      // OS 설정에서 권한 부여하고 돌아왔을 때 캐시 무효화 → build 가 새 값으로 재평가.
+      ref.invalidate(hasUsagePermissionProvider);
     }
   }
 
   Future<void> _openSettings() async {
     final api = ref.read(usageApiProvider);
     await api.openUsageSettings();
+  }
+
+  void _scheduleAutoProgressIfNeeded() {
+    if (_autoProgressed) return;
+    _autoProgressed = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.onComplete != null) {
+        widget.onComplete!();
+      } else {
+        context.go('/');
+      }
+    });
   }
 
   @override
@@ -81,16 +75,25 @@ class _PermissionPageState extends ConsumerState<PermissionPage>
           error: (_, _) => const Text('권한 확인 중 오류가 발생했습니다.'),
           data: (hasPermission) {
             if (hasPermission) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  if (widget.onComplete != null) {
-                    widget.onComplete!();
-                  } else {
-                    context.go('/');
-                  }
-                }
-              });
-              return const Text('권한이 허용되었습니다!');
+              _scheduleAutoProgressIfNeeded();
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('권한이 허용되었습니다!'),
+                  const SizedBox(height: 16),
+                  // 자동 진행 실패 시 fallback 으로 사용자가 직접 누를 수 있는 버튼.
+                  FilledButton(
+                    onPressed: () {
+                      if (widget.onComplete != null) {
+                        widget.onComplete!();
+                      } else {
+                        context.go('/');
+                      }
+                    },
+                    child: const Text('다음'),
+                  ),
+                ],
+              );
             }
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -108,7 +111,7 @@ class _PermissionPageState extends ConsumerState<PermissionPage>
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: _checking ? null : _openSettings,
+                  onPressed: _openSettings,
                   child: const Text('설정으로 이동'),
                 ),
               ],

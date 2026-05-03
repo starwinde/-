@@ -86,11 +86,43 @@ void main() {
       );
     });
 
-    test('DisturbanceLevel.fromInt maps 1/2/3, others fall back to L1', () {
+    test('L0: observe-only — all actions disabled (ADR 0004)', () {
+      final intervention = DisturbanceIntervention();
+      final action = intervention.onActiveUsage(
+        DateTime(2026, 5, 3, 10),
+        DisturbanceLevel.l0,
+      );
+      expect(action, isNotNull);
+      expect(action!.vibrateMs, 0);
+      expect(action.blackOverlayMs, 0);
+      expect(action.blockDialog, isFalse);
+      expect(action.launchHome, isFalse);
+      expect(action.blockOverlay, isFalse);
+      expect(action.periodicSec, 0);
+      expect(action.periodicVibrateMs, 0);
+      expect(action.periodicLaunchHome, isFalse);
+      expect(action.periodicLockDevice, isFalse);
+    });
+
+    test('L0 also respects cooldown (consistent firing semantics)', () {
+      final intervention = DisturbanceIntervention();
+      final t0 = DateTime(2026, 5, 3, 10);
+      expect(intervention.onActiveUsage(t0, DisturbanceLevel.l0), isNotNull);
+      expect(
+        intervention.onActiveUsage(
+          t0.add(const Duration(seconds: 10)),
+          DisturbanceLevel.l0,
+        ),
+        isNull,
+      );
+    });
+
+    test('DisturbanceLevel.fromInt maps 0/1/2/3, others fall back to L1', () {
+      expect(DisturbanceLevel.fromInt(0), DisturbanceLevel.l0);
       expect(DisturbanceLevel.fromInt(1), DisturbanceLevel.l1);
       expect(DisturbanceLevel.fromInt(2), DisturbanceLevel.l2);
       expect(DisturbanceLevel.fromInt(3), DisturbanceLevel.l3);
-      expect(DisturbanceLevel.fromInt(0), DisturbanceLevel.l1);
+      expect(DisturbanceLevel.fromInt(-1), DisturbanceLevel.l1);
       expect(DisturbanceLevel.fromInt(99), DisturbanceLevel.l1);
     });
   });

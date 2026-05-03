@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-03T08:48:40.797Z",
+  "createdAt": "2026-04-18T13:56:01.866Z",
+  "id": "ZarYI57NKdZgQSzi",
   "name": "routinemon-weekly-schedule-wizard",
+  "description": null,
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -15,11 +21,12 @@
         200,
         300
       ],
-      "webhookId": "routinemon-weekly-schedule-wizard"
+      "webhookId": "routinemon-weekly-schedule-wizard",
+      "id": "57d95327-24cc-4249-b5e3-66f486287453"
     },
     {
       "parameters": {
-        "jsCode": "// content_filter (source: n8n/shared/content_filter.js)\nconst PROFANITY_KO = ['바보', '멍청', '씨발', '개새끼', '지랄'];\nconst PROFANITY_EN = ['fuck', 'shit', 'asshole', 'idiot', 'bitch'];\nconst SELF_HARM = ['자해', '자살', '죽고 싶', 'kill myself', 'self harm', 'suicide'];\n\nconst body = $input.first().json.body || {};\nconst answers = body.answers || {};\nconst weekStart = body.week_start || '';\nconst userLocale = answers.user_locale || 'ko';\nconst refinement = body.refinement && typeof body.refinement === 'object' ? body.refinement : null;\nconst pastCtx = answers.past_week_context && typeof answers.past_week_context === 'object' ? answers.past_week_context : null;\n\nfunction reject(reason) {\n  return [{ json: { valid: false, reason, systemPrompt: '', userPrompt: '' } }];\n}\n\nif (!body.answers || typeof body.answers !== 'object') return reject('missing_answers');\nif (!weekStart || typeof weekStart !== 'string') return reject('missing_week_start');\n\nconst freeText = (answers.fixed_schedules || '').toString();\nconst lower = freeText.toLowerCase();\nfor (const word of SELF_HARM) if (lower.includes(word)) return reject('self_harm');\nfor (const word of [...PROFANITY_KO, ...PROFANITY_EN]) if (lower.includes(word)) return reject('profanity');\n\nconst isRefinement = refinement !== null;\nlet sp = 'You are a weekly schedule planner. Output ONLY a single JSON object (no markdown, no reasoning prose).\\n\\n';\nif (isRefinement) {\n  sp += 'REFINEMENT MODE: Refine the previous weekly schedule using the user follow-up answers.\\n';\n  sp += 'Previous items: ' + JSON.stringify(refinement.previous_items || []) + '\\n';\n  sp += 'Follow-up answers: ' + JSON.stringify(refinement.followup_answers || {}) + '\\n';\n  sp += 'Output keys: items (refined array), followup_questions (empty array), source (\"llm\").\\n';\n} else {\n  sp += 'INITIAL MODE: Generate a weekly schedule PLUS 3-5 follow-up questions that, if answered, would let you refine further.\\n';\n  sp += 'Output keys: items (10-18 items), followup_questions (3-5 questions), source (\"llm\").\\n';\n  sp += 'Follow-up format: {id (snake_case), question (Korean string), options (3-5 {value,label} pairs, all strings)}.\\n';\n}\nsp += '\\nItem schema: {title (Korean string), day_of_week (0-6, 0=Monday), start_time (\"HH:MM\"), end_time (\"HH:MM\"), category (one of: work, study, hobby, health, etc), tags (1-2 short strings)}.\\n';\nsp += 'Respect user wake/sleep, chronotype, focus time. Weekend days may differ from weekdays.\\n';\nsp += '\\n[USER PROFILE]\\n';\nsp += 'Locale: ' + userLocale + '\\n';\nsp += 'Status: ' + (answers.status || '-') + ', Wake: ' + (answers.wake_time || '-') + ', Sleep: ' + (answers.sleep_time || '-') + '\\n';\nsp += 'Chronotype: ' + (answers.chronotype || '-') + ', Work days: ' + (answers.work_days || '-') + ', Work hours: ' + (answers.work_hours || '-') + '\\n';\nsp += 'Commute: ' + (answers.commute_time || '-') + ', Meals: ' + (answers.meal_pattern || '-') + ', Focus: ' + (answers.focus_time || '-') + '\\n';\nsp += 'Exercise: ' + (answers.exercise || '-') + ', Ex time: ' + (answers.exercise_preferred_time || '-') + ', Hobby: ' + (answers.hobby || '-') + '\\n';\nsp += 'Goal: ' + (answers.goal_focus || '-') + ', Free time: ' + (answers.free_time || '-') + ', Fixed: ' + (answers.fixed_schedules || '-');\n\nif (pastCtx) {\n  const rate = Math.round((pastCtx.weekly_completion_rate || 0) * 100);\n  const focus = Math.round((pastCtx.focus_ratio_avg || 0) * 100);\n  sp += '\\n\\n[PAST EXECUTION CONTEXT — last ' + (pastCtx.weeks_observed || 4) + ' weeks]\\n';\n  sp += `- 평균 완료율 ${rate}%, 평균 집중도 ${focus}%\\n`;\n  if (pastCtx.lowest_completion_category) sp += `- 가장 미이행 카테고리: ${pastCtx.lowest_completion_category}\\n`;\n  if (pastCtx.most_missed_time_block) sp += `- 가장 미이행 시간대: ${pastCtx.most_missed_time_block}\\n`;\n  sp += '규칙: 위 미이행 패턴을 고려해 부담을 낮추되, 동일 카테고리는 빈도/시간대 조정으로 재시도하라. 완료율이 50% 미만이면 일정 개수를 줄이고 난이도를 낮춰라.';\n}\n\nreturn [{ json: { valid: true, answers, week_start: weekStart, userLocale, refinement, systemPrompt: sp, userPrompt: 'Output the JSON object now.' } }];"
+        "jsCode": "// content_filter (source: n8n/shared/content_filter.js)\nconst PROFANITY_KO = ['바보', '멍청', '씨발', '개새끼', '지랄'];\nconst PROFANITY_EN = ['fuck', 'shit', 'asshole', 'idiot', 'bitch'];\nconst SELF_HARM = ['자해', '자살', '죽고 싶', 'kill myself', 'self harm', 'suicide'];\n\nconst body = $input.first().json.body || {};\nconst answers = body.answers || {};\nconst weekStart = body.week_start || '';\nconst userLocale = answers.user_locale || 'ko';\nconst mode = body.mode || (body.refinement ? 'refine' : 'initial');\nconst ruleBasedSeed = Array.isArray(body.rule_based_seed) ? body.rule_based_seed : [];\nconst enhanceObjective = body.enhance_objective || 'diversify_titles';\nconst previousTurns = Array.isArray(body.previous_turns) ? body.previous_turns : [];\nconst followupAnswers = body.followup_answers && typeof body.followup_answers === 'object' ? body.followup_answers : {};\nconst refinement = body.refinement && typeof body.refinement === 'object' ? body.refinement : null;\nconst pastCtx = answers.past_week_context && typeof answers.past_week_context === 'object' ? answers.past_week_context : null;\n\nfunction reject(reason) {\n  return [{ json: { valid: false, reason, systemPrompt: '', userPrompt: '' } }];\n}\n\nif (!body.answers || typeof body.answers !== 'object') return reject('missing_answers');\nif (!weekStart || typeof weekStart !== 'string') return reject('missing_week_start');\n\nconst freeText = (answers.fixed_schedules || '').toString();\nconst lower = freeText.toLowerCase();\nfor (const word of SELF_HARM) if (lower.includes(word)) return reject('self_harm');\nfor (const word of [...PROFANITY_KO, ...PROFANITY_EN]) if (lower.includes(word)) return reject('profanity');\n\nlet sp = 'You are a weekly schedule planner. Output ONLY a single JSON object (no markdown, no reasoning prose).\\n\\n';\n\nif (mode === 'enhance') {\n  sp += 'ENHANCE MODE: Improve the rule-based seed below according to the requested objective.\\n';\n  sp += 'Preserve item count and day_of_week distribution. Diversify titles, naturalize Korean, refine tags.\\n';\n  sp += 'Rule-based seed: ' + JSON.stringify(ruleBasedSeed) + '\\n';\n  sp += 'Enhance objective: ' + enhanceObjective + '\\n';\n  sp += 'Output keys: items (enhanced array, same count), diff_summary (Korean 1-2 sentences), source (\"llm\").\\n';\n} else if (mode === 'refine') {\n  sp += 'REFINEMENT MODE: Refine the previous weekly schedule using follow-up answers.\\n';\n  // Support both new (previous_turns/followup_answers) and legacy (refinement.previous_items)\n  if (previousTurns.length > 0) {\n    sp += 'Previous turns (last ' + previousTurns.length + '): ' + JSON.stringify(previousTurns) + '\\n';\n    sp += 'Follow-up answers: ' + JSON.stringify(followupAnswers) + '\\n';\n  } else if (refinement) {\n    sp += 'Previous items: ' + JSON.stringify(refinement.previous_items || []) + '\\n';\n    sp += 'Follow-up answers: ' + JSON.stringify(refinement.followup_answers || {}) + '\\n';\n  }\n  sp += 'Output keys: items (refined array), followup_questions (empty array), source (\"llm\"), diff_summary (Korean 1-2 sentences).\\n';\n} else {\n  sp += 'INITIAL MODE: Generate a weekly schedule PLUS 3-5 follow-up questions that, if answered, would let you refine further.\\n';\n  sp += 'Output keys: items (10-18 items), followup_questions (3-5 questions), source (\"llm\").\\n';\n  sp += 'Follow-up format: {id (snake_case), question (Korean string), options (3-5 {value,label} pairs, all strings)}.\\n';\n}\n\nsp += '\\nItem schema: {title (Korean string), day_of_week (0-6, 0=Monday), start_time (\"HH:MM\"), end_time (\"HH:MM\"), category (one of: work, study, hobby, health, etc), tags (1-2 short strings)}.\\n';\nsp += 'Respect user wake/sleep, chronotype, focus time. Weekend days may differ from weekdays.\\n';\nsp += '\\n[USER PROFILE]\\n';\nsp += 'Locale: ' + userLocale + '\\n';\nsp += 'Status: ' + (answers.status || '-') + ', Wake: ' + (answers.wake_time || '-') + ', Sleep: ' + (answers.sleep_time || '-') + '\\n';\nsp += 'Chronotype: ' + (answers.chronotype || '-') + ', Work days: ' + (answers.work_days || '-') + ', Work hours: ' + (answers.work_hours || '-') + '\\n';\nsp += 'Commute: ' + (answers.commute_time || '-') + ', Meals: ' + (answers.meal_pattern || '-') + ', Focus: ' + (answers.focus_time || '-') + '\\n';\nsp += 'Exercise: ' + (answers.exercise || '-') + ', Ex time: ' + (answers.exercise_preferred_time || '-') + ', Hobby: ' + (answers.hobby || '-') + '\\n';\nsp += 'Goal: ' + (answers.goal_focus || '-') + ', Free time: ' + (answers.free_time || '-') + ', Fixed: ' + (answers.fixed_schedules || '-');\n\nif (pastCtx) {\n  const rate = Math.round((pastCtx.weekly_completion_rate || 0) * 100);\n  const focus = Math.round((pastCtx.focus_ratio_avg || 0) * 100);\n  sp += '\\n\\n[PAST EXECUTION CONTEXT — last ' + (pastCtx.weeks_observed || 4) + ' weeks]\\n';\n  sp += `- 평균 완료율 ${rate}%, 평균 집중도 ${focus}%\\n`;\n  if (pastCtx.lowest_completion_category) sp += `- 가장 미이행 카테고리: ${pastCtx.lowest_completion_category}\\n`;\n  if (pastCtx.most_missed_time_block) sp += `- 가장 미이행 시간대: ${pastCtx.most_missed_time_block}\\n`;\n  sp += '규칙: 위 미이행 패턴을 고려해 부담을 낮추되, 동일 카테고리는 빈도/시간대 조정으로 재시도하라. 완료율이 50% 미만이면 일정 개수를 줄이고 난이도를 낮춰라.';\n}\n\nreturn [{ json: { valid: true, mode, answers, week_start: weekStart, userLocale, refinement, systemPrompt: sp, userPrompt: 'Output the JSON object now.' } }];"
       },
       "name": "Validate + Build Prompt",
       "type": "n8n-nodes-base.code",
@@ -27,7 +34,8 @@
       "position": [
         420,
         300
-      ]
+      ],
+      "id": "99cd5ac3-4689-4d5d-b5ba-fc14ffd75289"
     },
     {
       "parameters": {
@@ -58,7 +66,8 @@
       "position": [
         640,
         300
-      ]
+      ],
+      "id": "fc989d6f-22f9-4f58-b1d1-5832f70cb3d8"
     },
     {
       "parameters": {
@@ -71,7 +80,8 @@
       "position": [
         860,
         240
-      ]
+      ],
+      "id": "a403b0f6-00a6-4e29-98fa-6d77c6fb68e8"
     },
     {
       "parameters": {
@@ -97,7 +107,8 @@
           "id": "uvZOqz3d6W7bFUbq",
           "name": "lm_studio"
         }
-      }
+      },
+      "id": "948a848a-0f43-4782-8cc5-b8b02aee31a7"
     },
     {
       "parameters": {
@@ -109,7 +120,8 @@
       "position": [
         1100,
         240
-      ]
+      ],
+      "id": "b01e06fb-4ba4-4f64-9f4b-ee0af0db7b84"
     },
     {
       "parameters": {
@@ -121,7 +133,8 @@
       "position": [
         860,
         660
-      ]
+      ],
+      "id": "3b153073-7b43-431d-8555-4a5a2e789127"
     },
     {
       "parameters": {
@@ -137,7 +150,8 @@
       "position": [
         1340,
         360
-      ]
+      ],
+      "id": "bb8fb828-36be-495a-9f39-a1eb5f929b64"
     }
   ],
   "connections": {
@@ -227,6 +241,297 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "be18c128-a26f-4fa1-8aa3-4faa6e59c9d0",
+  "activeVersionId": "be18c128-a26f-4fa1-8aa3-4faa6e59c9d0",
+  "versionCounter": 48,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-18T13:56:01.867Z",
+      "createdAt": "2026-04-18T13:56:01.867Z",
+      "role": "workflow:owner",
+      "workflowId": "ZarYI57NKdZgQSzi",
+      "projectId": "D3ShkO84EOmjjuWq",
+      "project": {
+        "updatedAt": "2026-04-14T09:18:40.680Z",
+        "createdAt": "2026-04-14T09:18:20.491Z",
+        "id": "D3ShkO84EOmjjuWq",
+        "name": "이 정열 <21m15a@naver.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "2efd6fea-2486-468f-90de-d05d7dbfd59f"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-05-03T08:48:40.798Z",
+    "createdAt": "2026-05-03T08:48:40.798Z",
+    "versionId": "be18c128-a26f-4fa1-8aa3-4faa6e59c9d0",
+    "workflowId": "ZarYI57NKdZgQSzi",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "routinemon/weekly-wizard",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          200,
+          300
+        ],
+        "webhookId": "routinemon-weekly-schedule-wizard",
+        "id": "57d95327-24cc-4249-b5e3-66f486287453"
+      },
+      {
+        "parameters": {
+          "jsCode": "// content_filter (source: n8n/shared/content_filter.js)\nconst PROFANITY_KO = ['바보', '멍청', '씨발', '개새끼', '지랄'];\nconst PROFANITY_EN = ['fuck', 'shit', 'asshole', 'idiot', 'bitch'];\nconst SELF_HARM = ['자해', '자살', '죽고 싶', 'kill myself', 'self harm', 'suicide'];\n\nconst body = $input.first().json.body || {};\nconst answers = body.answers || {};\nconst weekStart = body.week_start || '';\nconst userLocale = answers.user_locale || 'ko';\nconst mode = body.mode || (body.refinement ? 'refine' : 'initial');\nconst ruleBasedSeed = Array.isArray(body.rule_based_seed) ? body.rule_based_seed : [];\nconst enhanceObjective = body.enhance_objective || 'diversify_titles';\nconst previousTurns = Array.isArray(body.previous_turns) ? body.previous_turns : [];\nconst followupAnswers = body.followup_answers && typeof body.followup_answers === 'object' ? body.followup_answers : {};\nconst refinement = body.refinement && typeof body.refinement === 'object' ? body.refinement : null;\nconst pastCtx = answers.past_week_context && typeof answers.past_week_context === 'object' ? answers.past_week_context : null;\n\nfunction reject(reason) {\n  return [{ json: { valid: false, reason, systemPrompt: '', userPrompt: '' } }];\n}\n\nif (!body.answers || typeof body.answers !== 'object') return reject('missing_answers');\nif (!weekStart || typeof weekStart !== 'string') return reject('missing_week_start');\n\nconst freeText = (answers.fixed_schedules || '').toString();\nconst lower = freeText.toLowerCase();\nfor (const word of SELF_HARM) if (lower.includes(word)) return reject('self_harm');\nfor (const word of [...PROFANITY_KO, ...PROFANITY_EN]) if (lower.includes(word)) return reject('profanity');\n\nlet sp = 'You are a weekly schedule planner. Output ONLY a single JSON object (no markdown, no reasoning prose).\\n\\n';\n\nif (mode === 'enhance') {\n  sp += 'ENHANCE MODE: Improve the rule-based seed below according to the requested objective.\\n';\n  sp += 'Preserve item count and day_of_week distribution. Diversify titles, naturalize Korean, refine tags.\\n';\n  sp += 'Rule-based seed: ' + JSON.stringify(ruleBasedSeed) + '\\n';\n  sp += 'Enhance objective: ' + enhanceObjective + '\\n';\n  sp += 'Output keys: items (enhanced array, same count), diff_summary (Korean 1-2 sentences), source (\"llm\").\\n';\n} else if (mode === 'refine') {\n  sp += 'REFINEMENT MODE: Refine the previous weekly schedule using follow-up answers.\\n';\n  // Support both new (previous_turns/followup_answers) and legacy (refinement.previous_items)\n  if (previousTurns.length > 0) {\n    sp += 'Previous turns (last ' + previousTurns.length + '): ' + JSON.stringify(previousTurns) + '\\n';\n    sp += 'Follow-up answers: ' + JSON.stringify(followupAnswers) + '\\n';\n  } else if (refinement) {\n    sp += 'Previous items: ' + JSON.stringify(refinement.previous_items || []) + '\\n';\n    sp += 'Follow-up answers: ' + JSON.stringify(refinement.followup_answers || {}) + '\\n';\n  }\n  sp += 'Output keys: items (refined array), followup_questions (empty array), source (\"llm\"), diff_summary (Korean 1-2 sentences).\\n';\n} else {\n  sp += 'INITIAL MODE: Generate a weekly schedule PLUS 3-5 follow-up questions that, if answered, would let you refine further.\\n';\n  sp += 'Output keys: items (10-18 items), followup_questions (3-5 questions), source (\"llm\").\\n';\n  sp += 'Follow-up format: {id (snake_case), question (Korean string), options (3-5 {value,label} pairs, all strings)}.\\n';\n}\n\nsp += '\\nItem schema: {title (Korean string), day_of_week (0-6, 0=Monday), start_time (\"HH:MM\"), end_time (\"HH:MM\"), category (one of: work, study, hobby, health, etc), tags (1-2 short strings)}.\\n';\nsp += 'Respect user wake/sleep, chronotype, focus time. Weekend days may differ from weekdays.\\n';\nsp += '\\n[USER PROFILE]\\n';\nsp += 'Locale: ' + userLocale + '\\n';\nsp += 'Status: ' + (answers.status || '-') + ', Wake: ' + (answers.wake_time || '-') + ', Sleep: ' + (answers.sleep_time || '-') + '\\n';\nsp += 'Chronotype: ' + (answers.chronotype || '-') + ', Work days: ' + (answers.work_days || '-') + ', Work hours: ' + (answers.work_hours || '-') + '\\n';\nsp += 'Commute: ' + (answers.commute_time || '-') + ', Meals: ' + (answers.meal_pattern || '-') + ', Focus: ' + (answers.focus_time || '-') + '\\n';\nsp += 'Exercise: ' + (answers.exercise || '-') + ', Ex time: ' + (answers.exercise_preferred_time || '-') + ', Hobby: ' + (answers.hobby || '-') + '\\n';\nsp += 'Goal: ' + (answers.goal_focus || '-') + ', Free time: ' + (answers.free_time || '-') + ', Fixed: ' + (answers.fixed_schedules || '-');\n\nif (pastCtx) {\n  const rate = Math.round((pastCtx.weekly_completion_rate || 0) * 100);\n  const focus = Math.round((pastCtx.focus_ratio_avg || 0) * 100);\n  sp += '\\n\\n[PAST EXECUTION CONTEXT — last ' + (pastCtx.weeks_observed || 4) + ' weeks]\\n';\n  sp += `- 평균 완료율 ${rate}%, 평균 집중도 ${focus}%\\n`;\n  if (pastCtx.lowest_completion_category) sp += `- 가장 미이행 카테고리: ${pastCtx.lowest_completion_category}\\n`;\n  if (pastCtx.most_missed_time_block) sp += `- 가장 미이행 시간대: ${pastCtx.most_missed_time_block}\\n`;\n  sp += '규칙: 위 미이행 패턴을 고려해 부담을 낮추되, 동일 카테고리는 빈도/시간대 조정으로 재시도하라. 완료율이 50% 미만이면 일정 개수를 줄이고 난이도를 낮춰라.';\n}\n\nreturn [{ json: { valid: true, mode, answers, week_start: weekStart, userLocale, refinement, systemPrompt: sp, userPrompt: 'Output the JSON object now.' } }];"
+        },
+        "name": "Validate + Build Prompt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          420,
+          300
+        ],
+        "id": "99cd5ac3-4689-4d5d-b5ba-fc14ffd75289"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "valid_check",
+                "leftValue": "={{ $json.valid }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "name": "Is Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          640,
+          300
+        ],
+        "id": "fc989d6f-22f9-4f58-b1d1-5832f70cb3d8"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.systemPrompt }}\n\n{{ $json.userPrompt }}"
+        },
+        "name": "Basic LLM Chain",
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          860,
+          240
+        ],
+        "id": "a403b0f6-00a6-4e29-98fa-6d77c6fb68e8"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "google/gemma-4-e4b",
+            "mode": "list"
+          },
+          "options": {
+            "temperature": 0.4,
+            "maxTokens": 8192
+          }
+        },
+        "name": "OpenAI Chat Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          860,
+          460
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "uvZOqz3d6W7bFUbq",
+            "name": "lm_studio"
+          }
+        },
+        "id": "948a848a-0f43-4782-8cc5-b8b02aee31a7"
+      },
+      {
+        "parameters": {
+          "jsCode": "const res = $input.first().json;\nlet content = '';\nif (typeof res.text === 'string') content = res.text;\nelse if (res.output && typeof res.output === 'object') content = JSON.stringify(res.output);\nelse if (typeof res.response === 'string') content = res.response;\nelse content = JSON.stringify(res);\ncontent = content.trim();\nif (content.startsWith('```')) {\n  content = content.replace(/^```(?:json)?\\s*\\n?/i, '').replace(/\\n?```\\s*$/, '').trim();\n}\n\nconst ALLOWED_CATEGORIES = ['work', 'study', 'hobby', 'health', 'etc'];\nconst TIME_RE = /^([01]\\d|2[0-3]):[0-5]\\d$/;\n\nfunction presetItems() {\n  return [\n    { title: '집중 업무 블록', day_of_week: 0, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n    { title: '집중 업무 블록', day_of_week: 1, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n    { title: '집중 업무 블록', day_of_week: 2, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n    { title: '집중 업무 블록', day_of_week: 3, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n    { title: '집중 업무 블록', day_of_week: 4, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n    { title: '운동', day_of_week: 0, start_time: '18:30', end_time: '19:30', category: 'health', tags: [] },\n    { title: '운동', day_of_week: 2, start_time: '18:30', end_time: '19:30', category: 'health', tags: [] },\n    { title: '운동', day_of_week: 4, start_time: '18:30', end_time: '19:30', category: 'health', tags: [] },\n    { title: '취미·자기계발', day_of_week: 5, start_time: '10:00', end_time: '12:00', category: 'hobby', tags: [] }\n  ];\n}\n\nlet parsed;\ntry { parsed = JSON.parse(content); } catch (e) { parsed = null; }\n\nif (!parsed || !Array.isArray(parsed.items) || parsed.items.length === 0) {\n  return [{ json: { items: presetItems(), source: 'preset', followup_questions: [] } }];\n}\n\nconst items = [];\nfor (const raw of parsed.items) {\n  if (!raw || typeof raw !== 'object') continue;\n  const title = typeof raw.title === 'string' ? raw.title.trim() : '';\n  if (!title) continue;\n  let dow = Number(raw.day_of_week);\n  if (!Number.isFinite(dow)) continue;\n  dow = Math.max(0, Math.min(6, Math.trunc(dow)));\n  const start = typeof raw.start_time === 'string' ? raw.start_time.trim() : '';\n  const end = typeof raw.end_time === 'string' ? raw.end_time.trim() : '';\n  if (!TIME_RE.test(start) || !TIME_RE.test(end)) continue;\n  const category = ALLOWED_CATEGORIES.includes(raw.category) ? raw.category : 'etc';\n  const tags = Array.isArray(raw.tags) ? raw.tags.map(String) : [];\n  items.push({ title, day_of_week: dow, start_time: start, end_time: end, category, tags });\n}\n\nif (items.length === 0) {\n  return [{ json: { items: presetItems(), source: 'preset', followup_questions: [] } }];\n}\n\nconst followupQuestions = [];\nif (Array.isArray(parsed.followup_questions)) {\n  for (const q of parsed.followup_questions) {\n    if (!q || typeof q !== 'object') continue;\n    const id = typeof q.id === 'string' ? q.id.trim() : '';\n    const question = typeof q.question === 'string' ? q.question.trim() : '';\n    if (!id || !question) continue;\n    if (!Array.isArray(q.options) || q.options.length === 0) continue;\n    const options = [];\n    for (const opt of q.options) {\n      if (!opt || typeof opt !== 'object') continue;\n      const val = typeof opt.value === 'string' ? opt.value.trim() : '';\n      const label = typeof opt.label === 'string' ? opt.label.trim() : '';\n      if (!val || !label) continue;\n      options.push({ value: val, label });\n    }\n    if (options.length === 0) continue;\n    followupQuestions.push({ id, question, options });\n  }\n}\n\nreturn [{ json: { items, source: 'llm', followup_questions: followupQuestions } }];"
+        },
+        "name": "Parse LLM JSON",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1100,
+          240
+        ],
+        "id": "b01e06fb-4ba4-4f64-9f4b-ee0af0db7b84"
+      },
+      {
+        "parameters": {
+          "jsCode": "return [{ json: { items: [\n  { title: '집중 업무 블록', day_of_week: 0, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n  { title: '집중 업무 블록', day_of_week: 1, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n  { title: '집중 업무 블록', day_of_week: 2, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n  { title: '집중 업무 블록', day_of_week: 3, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n  { title: '집중 업무 블록', day_of_week: 4, start_time: '09:00', end_time: '11:00', category: 'work', tags: [] },\n  { title: '운동', day_of_week: 0, start_time: '18:30', end_time: '19:30', category: 'health', tags: [] },\n  { title: '운동', day_of_week: 2, start_time: '18:30', end_time: '19:30', category: 'health', tags: [] },\n  { title: '운동', day_of_week: 4, start_time: '18:30', end_time: '19:30', category: 'health', tags: [] },\n  { title: '취미·자기계발', day_of_week: 5, start_time: '10:00', end_time: '12:00', category: 'hobby', tags: [] }\n], source: 'preset', followup_questions: [] } }];"
+        },
+        "name": "Preset Fallback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          860,
+          660
+        ],
+        "id": "3b153073-7b43-431d-8555-4a5a2e789127"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "name": "Respond",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1340,
+          360
+        ],
+        "id": "bb8fb828-36be-495a-9f39-a1eb5f929b64"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Validate + Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate + Build Prompt": {
+        "main": [
+          [
+            {
+              "node": "Is Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Valid?": {
+        "main": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Preset Fallback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Basic LLM Chain": {
+        "main": [
+          [
+            {
+              "node": "Parse LLM JSON",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse LLM JSON": {
+        "main": [
+          [
+            {
+              "node": "Respond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preset Fallback": {
+        "main": [
+          [
+            {
+              "node": "Respond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "이 정열",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-05-03T08:48:40.829Z",
+        "id": 184,
+        "workflowId": "ZarYI57NKdZgQSzi",
+        "versionId": "be18c128-a26f-4fa1-8aa3-4faa6e59c9d0",
+        "event": "activated",
+        "userId": "2efd6fea-2486-468f-90de-d05d7dbfd59f"
+      },
+      {
+        "createdAt": "2026-05-03T08:48:40.819Z",
+        "id": 183,
+        "workflowId": "ZarYI57NKdZgQSzi",
+        "versionId": "be18c128-a26f-4fa1-8aa3-4faa6e59c9d0",
+        "event": "deactivated",
+        "userId": "2efd6fea-2486-468f-90de-d05d7dbfd59f"
+      }
+    ]
   }
 }
