@@ -70,6 +70,46 @@ void main() {
       expect(schedule.deletedAt, isNotNull);
     });
 
+    test('softDeleteMany sets deletedAt for all ids in one transaction',
+        () async {
+      final id1 = await repo.insert(
+        userId: userId,
+        title: '일정 A',
+        category: 'work',
+      );
+      final id2 = await repo.insert(
+        userId: userId,
+        title: '일정 B',
+        category: 'study',
+      );
+      final id3 = await repo.insert(
+        userId: userId,
+        title: '일정 C',
+        category: 'hobby',
+      );
+
+      await repo.softDeleteMany([id1, id3]);
+
+      final all = await db.select(db.schedules).get();
+      final byId = {for (final s in all) s.id: s};
+      expect(byId[id1]!.deletedAt, isNotNull);
+      expect(byId[id2]!.deletedAt, isNull);
+      expect(byId[id3]!.deletedAt, isNotNull);
+
+      // outbox: 2 추가 update (id1, id3)
+      final outbox = await db.select(db.outbox).get();
+      final updates = outbox
+          .where((o) => o.targetTable == 'schedules' && o.operation == 'update')
+          .toList();
+      expect(updates, hasLength(2));
+    });
+
+    test('softDeleteMany with empty list is no-op', () async {
+      await repo.softDeleteMany(const []);
+      final outbox = await db.select(db.outbox).get();
+      expect(outbox, isEmpty);
+    });
+
     test('restore clears deletedAt', () async {
       final id = await repo.insert(
         userId: userId,

@@ -84,6 +84,11 @@ class ScheduleActions extends _$ScheduleActions {
     await ref.read(scheduleRepositoryProvider).softDelete(id);
   }
 
+  /// Soft deletes multiple schedules in a single transaction.
+  Future<void> softDeleteMany(List<int> ids) async {
+    await ref.read(scheduleRepositoryProvider).softDeleteMany(ids);
+  }
+
   /// Restores a soft-deleted schedule.
   Future<void> restore(int id) async {
     await ref.read(scheduleRepositoryProvider).restore(id);

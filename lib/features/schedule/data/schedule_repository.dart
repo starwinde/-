@@ -171,6 +171,24 @@ class ScheduleRepository {
     });
   }
 
+  /// Soft-deletes multiple schedules in one transaction.
+  Future<void> softDeleteMany(List<int> ids) async {
+    if (ids.isEmpty) return;
+    await _db.transaction(() async {
+      final now = DateTime.now();
+      for (final id in ids) {
+        await (_db.update(_db.schedules)..where((s) => s.id.equals(id)))
+            .write(
+          SchedulesCompanion(
+            deletedAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
+        await _enqueue('schedules', id.toString(), 'update');
+      }
+    });
+  }
+
   /// Restores a soft-deleted schedule.
   Future<void> restore(int id) async {
     await _db.transaction(() async {
