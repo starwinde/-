@@ -1,5 +1,7 @@
 # Triage Labels
 
+> **현재 상태 (2026-05-03)**: 이 프로젝트는 솔로 메인테이너 모델이라 인테이크 트리아지 차원이 사실상 안 쓰임. 이슈 파일의 `Status:` 는 실행 단계 4종 (`not-started`/`in-progress`/`blocked`/`done`) 만 사용. 아래 5종 트리아지 라벨은 **다중 컨트리뷰터 시점까지 활성화 보류**. 외부 PR / 이슈 리포트가 들어오기 시작하면 이 파일을 활성화.
+
 스킬은 다섯 가지 표준 트리아지 역할로 말한다. 이 파일은 그 역할을 이 저장소의 실제 라벨 문자열에 매핑한다.
 
 | Label in mattpocock/skills | Label in our tracker | Meaning                                            |

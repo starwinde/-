@@ -1,5 +1,9 @@
 # 루틴몬 — Project Rules
 
+> **❄️ 동결 공지 (2026-05-03 거버넌스 전환)**:
+> 이 문서는 거버넌스 시나리오 2 전환 시점에 **동결됨**. 신규 아키텍처 / 행동 결정은 `docs/adr/NNNN-*.md` 로 기록 (`/grill-with-docs` 호출). 기존 결정의 backfill 은 하지 않으며, 본 파일은 **pre-transition 결정 아카이브**로 살아있음. 신규 결정 시 본 파일을 갱신하지 말고 ADR 신설.
+> 자세한 전환 배경은 `~/.claude/projects/-home-str-dgx-spark-Desktop-Reward-Based-Self-Management-AppReward-Based-Self-Management-App/memory/project_governance_transition.md` 참조.
+
 > 이 문서는 프로젝트의 행동 규칙·아키텍처 가드·anti-pattern을 정의합니다. 변경 시 PR + 사용자 승인 필수.
 
 ---

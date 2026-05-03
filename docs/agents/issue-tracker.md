@@ -7,8 +7,9 @@
 - 한 feature당 한 디렉터리: `.scratch/<feature-slug>/`
 - PRD 는 `.scratch/<feature-slug>/PRD.md`
 - 구현 이슈는 `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, `01` 부터 번호 매김
-- 트리아지 상태는 각 이슈 파일 상단에 `Status:` 라인으로 기록 (`docs/agents/triage-labels.md` 참조)
+- **`Status:`** 라인은 실행 단계 (4종): `not-started` / `in-progress` / `blocked` / `done`. 이 프로젝트는 솔로 메인테이너 모델이라 인테이크 트리아지 차원은 사용하지 않음 — `docs/agents/triage-labels.md` 는 다중 컨트리뷰터 시점까지 보류.
 - 댓글 / 대화 히스토리는 파일 하단 `## Comments` 섹션에 append
+- 임시 탐색용 파일은 `.scratch/<feature-slug>/tmp/` 또는 `.scratch/<feature-slug>/scratch/` 에 두면 git ignore 됨 (`.gitignore` 등록됨)
 
 ## Git tracking policy
 

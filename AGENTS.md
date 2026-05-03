@@ -21,11 +21,23 @@
 
 ## 행동 규칙 / 거버넌스
 
-이 저장소는 다음 거버넌스 문서를 따른다 (Phase 2에서 ADR 기반으로 점진적 분해 예정):
+이 저장소는 거버넌스 시나리오 2 (AGENTS.md + ADR + 로컬 마크다운 이슈 트래커) 로 운영. 2026-05-03 전환.
 
-- `PRD.md` — 제품 목표, 범위, Open Decisions
-- `Tasks.md` — 페이즈/태스크, 진행 상태, DoD
-- `rules.md` — Scope Guard, Phase Discipline, Architecture, Code Quality, Testing, Privacy, Anti-patterns
+- `PRD.md` — 제품 목표, 범위, Open Decisions (단일 진실 원천 유지; feature 별 PRD 분리는 lazy)
+- `Tasks.md` — 페이즈 단위 잔여 로드맵 + 완료 이력 (점진적 폐기). 새 페이즈/블록은 `.scratch/<feature>/` 로 이주
+- `rules.md` — **동결됨 (pre-transition 결정 아카이브)**. 신규 결정은 `docs/adr/NNNN-*.md` 로 (`/grill-with-docs` 호출)
+- `docs/adr/` — 신규 아키텍처/행동 결정 (lazy 생성)
+- `.scratch/<feature>/PRD.md` + `issues/NN-*.md` — feature 단위 작업 추적 (Status: `not-started`/`in-progress`/`blocked`/`done`)
+
+## 중요: 소리 알림
+
+내 요청에 응답하거나 명령을 실행한 후, 소리로 알려주려면 이 명령을 실행해:
+
+```bash
+paplay /usr/share/sounds/freedesktop/stereo/complete.oga
+```
+
+> 환경: Linux (DGX Spark). macOS 의 `afplay /System/Library/Sounds/Funk.aiff` 등가물로 PulseAudio `paplay` + freedesktop `complete.oga` 사용. 이 사운드 파일은 표준 "작업 완료" 알림음.
 
 ## Agent skills
 
