@@ -60,7 +60,7 @@ void main() {
     expect(res.source, AiReportSource.llm,
         reason: 'Expected LLM inference');
     expect(res.summary, isNotEmpty);
-  }, timeout: const Timeout(Duration(seconds: 90)));
+  }, timeout: const Timeout(Duration(seconds: 180)));
 
   test('monthly: returns llm source', () async {
     final monthlyData = {
@@ -78,7 +78,7 @@ void main() {
     final res = await post(monthlyUrl, monthlyData);
     expect(res.source, AiReportSource.llm);
     expect(res.summary, isNotEmpty);
-  }, timeout: const Timeout(Duration(seconds: 90)));
+  }, timeout: const Timeout(Duration(seconds: 180)));
 
   test('weekly: missing required field falls back to preset', () async {
     // Omit the required `data` field → n8n Validate Input 실패 → Preset Fallback

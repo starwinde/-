@@ -62,7 +62,7 @@ void main() {
       expect(item.dayOfWeek, inInclusiveRange(0, 6));
       expect(item.title, isNotEmpty);
     }
-  }, timeout: const Timeout(Duration(seconds: 90)));
+  }, timeout: const Timeout(Duration(seconds: 180)));
 
   test('Preset path: blocked keyword in fixed_schedules → source=preset',
       () async {

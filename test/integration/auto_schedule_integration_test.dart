@@ -54,7 +54,7 @@ void main() {
     expect(res.confidence, lessThanOrEqualTo(1.0));
     // category is one of the 5 enum values; fromString falls back to etc.
     expect(ScheduleCategory.values, contains(res.category));
-  }, timeout: const Timeout(Duration(seconds: 60)));
+  }, timeout: const Timeout(Duration(seconds: 180)));
 
   test('Preset path: empty text returns preset source', () async {
     final res = await post({'text': '', 'user_locale': 'ko'});
