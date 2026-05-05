@@ -135,11 +135,14 @@ S ≥ 95% / A ≥ 85% / B ≥ 70% / C ≥ 50% / D < 50%
 - raw UsageStats 클라우드 전송 금지 (집계만)
 
 ### 2.13 인증
-- Supabase Auth + Google 로그인 (강제, 첫 화면)
+- Supabase Auth + Google 로그인 (선택, 2026-05-04 rev 27 결정 — 旧 "강제, 첫 화면"에서 게스트 모드 허용으로 전환)
+  - 온보딩 step 2 에서 "Google로 로그인" 또는 "나중에 로그인" 선택 가능
+  - 게스트 모드(미인증)는 로컬 Drift 저장소만 사용하며 Supabase 동기화·멀티 디바이스 동기화·자동 일정 가져오기(Calendar/Gmail)는 비활성. 설정 화면에서 언제든 사후 로그인하여 동기화 활성 가능
+  - PRD §2.16 자동 스케줄(Pro/Calendar/Gmail) 기능은 인증 필수 → 게스트 모드에서는 진입점 비활성화
 - Apple은 v1.x 이후
-- 자체 서버 인증: Supabase JWT 전달 + JWKS 검증
+- 자체 서버 인증: Supabase JWT 전달 + JWKS 검증 (인증 사용자에 한함)
 - 닉네임 2–12자 / 펫 별명 1–10자 (둘 다 필수, 검열·제한)
-- 변경 빈도: 닉네임 월 1회 / 펫 별명 주 1회 (Supabase 권위)
+- 변경 빈도: 닉네임 월 1회 / 펫 별명 주 1회 (Supabase 권위 — 게스트 모드에서는 로컬 권위)
 
 ### 2.14 자체 서버 (n8n self-hosted + 로컬 LLM)
 
@@ -463,6 +466,7 @@ PostHog/Firebase identify 호출 시 다음 속성 전달:
 - OD-7 Closed Beta 참여자 인센티브 — Phase 6
 - OD-8 ComfyUI 실행 책임 (수동 vs 자동 vs 백엔드) — Phase 4 시작 시
 - OD-9 HP·XP 공식 미세 튜닝 — Phase 3 테스트 후
+- OD-10 ~~로그인 강제 vs 게스트 모드~~ → ✅ Decided 2026-05-04: 게스트 모드 허용 (PRD §2.13 개정). 사유: 실기기 검증 중 "나중에 로그인" 스킵 후 redirect 가드(app.dart)에 의해 온보딩 첫 화면으로 튕기는 버그 발생. PRD "로그인 강제"와 onboarding "나중에 로그인" 버튼이 모순되어 발생. 사용자 선택지(B 게스트 모드 허용) 채택.
 
 ---
 

@@ -71,28 +71,21 @@ GoRouter router(Ref ref) {
       // While loading, don't redirect — stay on current page.
       if (authState.isLoading || onboardingState.isLoading) return null;
 
-      final isAuthenticated = authState.value != null;
       final isOnboardingDone = onboardingState.value ?? false;
       final location = state.matchedLocation;
 
       // Allow egg-hatch to proceed without redirect
       if (location == '/egg-hatch') return null;
 
-      // Not authenticated -> /onboarding (login is step 2)
-      if (!isAuthenticated && location != '/onboarding') {
+      // PRD §2.13 (rev 27, 2026-05-04): 게스트 모드 허용. Onboarding 완료 여부가
+      // 라우팅 권한의 단일 기준. 인증은 동기화 활성화의 부가 기능.
+      if (!isOnboardingDone && location != '/onboarding') {
         return '/onboarding';
       }
 
-      // Authenticated but onboarding not complete -> /onboarding
-      if (isAuthenticated && !isOnboardingDone && location != '/onboarding') {
-        return '/onboarding';
-      }
-
-      // Authenticated + onboarding done + on login/onboarding -> /home
-      if (isAuthenticated && isOnboardingDone) {
-        if (location == '/onboarding' || location == '/login') {
-          return '/home';
-        }
+      if (isOnboardingDone &&
+          (location == '/onboarding' || location == '/login')) {
+        return '/home';
       }
 
       return null;
