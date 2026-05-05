@@ -69,6 +69,8 @@ S ≥ 95% / A ≥ 85% / B ≥ 70% / C ≥ 50% / D < 50%
 
 ### 2.7 진화 (총 13세트 PNG, ComfyUI 생성)
 
+> **v1.0 시각 자산 정책 (2026-05-05 결정)**: v1.0 정식 펫 표현은 `PetPlaceholder` 텍스트 라벨(슬롯명 + 종/단계 캡션). 실제 이미지 자산(13세트 PNG, ComfyUI) 통합은 **v1.0 스코프 외**, v1.x 후속. Phase 4 보류와 정합. 이미지 추가 시 `lib/features/pet/presentation/pet_placeholder.dart` 단일 파일에서 `Image.asset` 분기만 활성화하면 호출지 변경 0건. 19 슬롯 인벤토리(A1–A3 egg, B1–B3 cracking, C1–C5 bird, D1–D4 dragon, E1–E4 dolphin)는 그대로 명명 유지.
+
 곡선: **후반 가속**
 
 #### 새 5단계 (빠름, ~90일)
@@ -467,6 +469,7 @@ PostHog/Firebase identify 호출 시 다음 속성 전달:
 - OD-8 ComfyUI 실행 책임 (수동 vs 자동 vs 백엔드) — Phase 4 시작 시
 - OD-9 HP·XP 공식 미세 튜닝 — Phase 3 테스트 후
 - OD-10 ~~로그인 강제 vs 게스트 모드~~ → ✅ Decided 2026-05-04: 게스트 모드 허용 (PRD §2.13 개정). 사유: 실기기 검증 중 "나중에 로그인" 스킵 후 redirect 가드(app.dart)에 의해 온보딩 첫 화면으로 튕기는 버그 발생. PRD "로그인 강제"와 onboarding "나중에 로그인" 버튼이 모순되어 발생. 사용자 선택지(B 게스트 모드 허용) 채택.
+- OD-11 ~~v1.0 펫 시각 자산 (실제 이미지 vs placeholder)~~ → ✅ Decided 2026-05-05: **v1.0 placeholder 유지, 실제 이미지는 v1.0 스코프 외** (PRD §2.7 개정). 19 슬롯 분기 + 종/단계 캡션은 `PetPlaceholder` 위젯이 SoT. v1.x 통합 시 `Image.asset` 분기만 활성화 — 호출지 변경 0건. 사유: 자산 부재로 기능 구현 지연을 방지, Phase 4 보류와 자연스러운 정합.
 
 ---
 
