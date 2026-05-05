@@ -22,6 +22,7 @@ import 'package:routinemon/features/onboarding/presentation/onboarding_page.dart
 import 'package:routinemon/features/onboarding/presentation/permission_page.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
 import 'package:routinemon/features/pet/presentation/pet_card.dart';
+import 'package:routinemon/features/pet/presentation/pet_detail_page.dart';
 import 'package:routinemon/features/schedule/presentation/schedule_create_page.dart';
 import 'package:routinemon/features/schedule/presentation/schedule_page.dart';
 import 'package:routinemon/features/schedule/presentation/trash_page.dart';
@@ -159,6 +160,10 @@ GoRouter router(Ref ref) {
         builder: (context, state) => const UsageHistoryPage(),
       ),
       GoRoute(
+        path: '/pet/detail',
+        builder: (context, state) => const PetDetailPage(),
+      ),
+      GoRoute(
         path: '/ai/report',
         builder: (context, state) {
           final period = state.extra as ReportPeriod? ?? ReportPeriod.weekly;
@@ -245,8 +250,7 @@ class _HomePage extends StatelessWidget {
             case 1:
               unawaited(context.push('/schedule'));
             case 2:
-              // TODO(phase-4): Pet detail page
-              break;
+              unawaited(context.push('/pet/detail'));
           }
         },
       ),

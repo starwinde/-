@@ -8,6 +8,7 @@ import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/pet/data/pet_repository.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
 import 'package:routinemon/features/pet/presentation/pet_placeholder.dart';
+import 'package:routinemon/features/pet/presentation/pet_progress_bars.dart';
 
 /// 홈 대시보드 펫 카드 — 활성 펫의 종/이름/Lv/XP/HP 를 표시한다.
 ///
@@ -98,9 +99,9 @@ class _PetCardContent extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _XpBar(species: _species, xp: pet.xp, level: pet.level),
+                  PetXpBar(species: _species, xp: pet.xp, level: pet.level),
                   const SizedBox(height: 6),
-                  _HpBar(hp: pet.hp),
+                  PetHpBar(hp: pet.hp),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -145,85 +146,6 @@ class _NoPetCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _XpBar extends StatelessWidget {
-  const _XpBar({
-    required this.species,
-    required this.xp,
-    required this.level,
-  });
-
-  final PetSpecies species;
-  final int xp;
-  final int level;
-
-  @override
-  Widget build(BuildContext context) {
-    final thresholds = _thresholdsFor(species);
-    final maxLevel = thresholds.length + 1;
-    final currentBase = level >= 2 ? thresholds[level - 2] : 0;
-    final nextThreshold =
-        level <= thresholds.length ? thresholds[level - 1] : null;
-    final progress = nextThreshold == null
-        ? 1.0
-        : ((xp - currentBase) / (nextThreshold - currentBase)).clamp(0.0, 1.0);
-    final label = nextThreshold == null
-        ? 'XP $xp (MAX Lv$maxLevel)'
-        : 'XP $xp / $nextThreshold';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 8,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
-    );
-  }
-
-  List<int> _thresholdsFor(PetSpecies s) => switch (s) {
-        PetSpecies.bird => const [60, 210, 480, 900],
-        PetSpecies.dragon => const [200, 600, 1200],
-        PetSpecies.dolphin => const [250, 750, 1500],
-      };
-}
-
-class _HpBar extends StatelessWidget {
-  const _HpBar({required this.hp});
-  final int hp;
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = (hp / 100).clamp(0.0, 1.0);
-    final color = hp >= 70
-        ? Colors.green
-        : hp >= 30
-            ? Colors.orange
-            : Colors.red;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 8,
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text('HP $hp / 100',
-            style: Theme.of(context).textTheme.bodySmall),
-      ],
     );
   }
 }
