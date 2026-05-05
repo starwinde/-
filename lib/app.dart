@@ -13,6 +13,7 @@ import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/auth/presentation/login_page.dart';
 import 'package:routinemon/features/data_export/presentation/data_export_page.dart';
 import 'package:routinemon/features/disturbance/application/disturbance_controller.dart';
+import 'package:routinemon/features/focus_tracking/application/schedule_session_trigger.dart';
 import 'package:routinemon/features/disturbance/presentation/usage_history_page.dart';
 import 'package:routinemon/features/disturbance/presentation/usage_log_tile.dart';
 import 'package:routinemon/features/mood/presentation/mood_check_in_tile.dart';
@@ -189,6 +190,10 @@ class RoutinemonApp extends ConsumerWidget {
 
     // Start disturbance controller (T5.21 일정별 방해 허용).
     ref.read(disturbanceControllerProvider).start();
+
+    // Start schedule-driven session trigger (rev 31 — 일정 시간대 자동
+    // 세션 시작/종료 + 60초 사용 누적).
+    ref.read(scheduleSessionTriggerProvider).start();
 
     final themeModeAsync = ref.watch(themeModeProvider);
     final themeMode = themeModeAsync.value ?? ThemeMode.system;

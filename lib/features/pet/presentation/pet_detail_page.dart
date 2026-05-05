@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:routinemon/core/db/app_database.dart' as db;
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
+import 'package:routinemon/features/focus_tracking/application/settlement_orchestrator.dart';
 import 'package:routinemon/features/pet/data/pet_repository.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
 import 'package:routinemon/features/pet/presentation/pet_placeholder.dart';
@@ -22,6 +23,31 @@ class PetDetailPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('내 펫'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bolt),
+            tooltip: '오늘 정산 실행 (dev)',
+            onPressed: () async {
+              final orch = ref.read(settlementOrchestratorProvider);
+              final messenger = ScaffoldMessenger.of(context);
+              final result = await orch.runForDate(
+                userId: userId,
+                date: DateTime.now(),
+              );
+              if (!context.mounted) return;
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(
+                    result == null
+                        ? '오늘 정산할 일정·세션이 없습니다.'
+                        : '정산 완료 — ${result.grade.name.toUpperCase()}등급 / '
+                            'XP +${result.xpEarned} / HP ${result.hpChange >= 0 ? '+' : ''}${result.hpChange}',
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<db.Pet?>(
         stream: repo.watchActivePet(userId),
