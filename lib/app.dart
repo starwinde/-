@@ -21,6 +21,7 @@ import 'package:routinemon/features/onboarding/presentation/egg_hatch_page.dart'
 import 'package:routinemon/features/onboarding/presentation/onboarding_page.dart';
 import 'package:routinemon/features/onboarding/presentation/permission_page.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
+import 'package:routinemon/features/pet/presentation/pet_card.dart';
 import 'package:routinemon/features/schedule/presentation/schedule_create_page.dart';
 import 'package:routinemon/features/schedule/presentation/schedule_page.dart';
 import 'package:routinemon/features/schedule/presentation/trash_page.dart';
@@ -219,6 +220,7 @@ class _HomePage extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text('홈 대시보드', style: TextStyle(fontSize: 20)),
           ),
+          PetCard(),
           MoodCheckInTile(),
           UsageLogTile(),
         ],

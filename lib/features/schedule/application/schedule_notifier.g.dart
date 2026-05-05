@@ -138,7 +138,7 @@ final class ScheduleActionsProvider
   ScheduleActions create() => ScheduleActions();
 }
 
-String _$scheduleActionsHash() => r'5c6c5c425c86bf9bc0d3931a137019461d467636';
+String _$scheduleActionsHash() => r'6dcfbbf8fdf154c41c739aabaf4d647b5deef071';
 
 /// Manages schedule CRUD operations.
 
