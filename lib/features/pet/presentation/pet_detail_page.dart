@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:routinemon/core/db/app_database.dart' as db;
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/focus_tracking/application/settlement_orchestrator.dart';
+import 'package:routinemon/features/pet/application/pet_interaction_service.dart';
+import 'package:routinemon/features/pet/data/pet_interaction_repository.dart';
 import 'package:routinemon/features/pet/data/pet_repository.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
 import 'package:routinemon/features/pet/presentation/pet_placeholder.dart';
@@ -56,16 +58,27 @@ class PetDetailPage extends ConsumerWidget {
           if (pet == null) {
             return const _NoPet();
           }
-          return _PetDetailBody(pet: pet);
+          return _PetDetailBody(pet: pet, userId: userId);
         },
       ),
     );
   }
 }
 
-class _PetDetailBody extends StatelessWidget {
-  const _PetDetailBody({required this.pet});
+class _PetDetailBody extends ConsumerStatefulWidget {
+  const _PetDetailBody({required this.pet, required this.userId});
   final db.Pet pet;
+  final String userId;
+
+  @override
+  ConsumerState<_PetDetailBody> createState() => _PetDetailBodyState();
+}
+
+class _PetDetailBodyState extends ConsumerState<_PetDetailBody> {
+  /// 인터랙션 적용 후 카운트 새로고침용 — 변경 시 FutureBuilder rebuild.
+  int _interactionTick = 0;
+
+  db.Pet get pet => widget.pet;
 
   PetSpecies get _species => switch (pet.species) {
         'bird' => PetSpecies.bird,
@@ -124,6 +137,14 @@ class _PetDetailBody extends StatelessWidget {
         const SizedBox(height: 8),
         PetHpBar(hp: pet.hp),
         const SizedBox(height: 24),
+        _SectionTitle('오늘 인터랙션'),
+        const SizedBox(height: 8),
+        _InteractionBar(
+          tick: _interactionTick,
+          petId: pet.id,
+          onTap: _handleInteraction,
+        ),
+        const SizedBox(height: 24),
         _SectionTitle('진화 단계'),
         const SizedBox(height: 8),
         _EvolutionStageList(species: _species, currentLevel: pet.level),
@@ -134,6 +155,7 @@ class _PetDetailBody extends StatelessWidget {
         _InfoRow('태어난 날', _formatDate(pet.createdAt)),
         _InfoRow('현재 XP', '${pet.xp}'),
         _InfoRow('현재 HP', '${pet.hp} / 100'),
+        _IntimacyRow(petId: pet.id, tick: _interactionTick),
         _InfoRow('생존', pet.isAlive ? '생존' : '사망'),
         if (!pet.isAlive && pet.diedAt != null)
           _InfoRow('사망 시각', _formatDate(pet.diedAt!)),
@@ -145,6 +167,174 @@ class _PetDetailBody extends StatelessWidget {
 
   static String _formatDate(DateTime dt) =>
       DateFormat('yyyy-MM-dd HH:mm').format(dt.toLocal());
+
+  Future<void> _handleInteraction(PetActionType action) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final service = ref.read(petInteractionServiceProvider);
+    final result = await service.apply(
+      petId: pet.id,
+      userId: widget.userId,
+      action: action,
+    );
+    if (!mounted) return;
+    if (!result.success) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            '${_actionLabel(action)} — 오늘 한도 ${result.dailyLimit ?? 0}회 모두 사용했습니다',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() => _interactionTick++);
+    final parts = <String>[];
+    if (result.hpDelta != 0) {
+      parts.add('HP ${result.hpDelta > 0 ? '+' : ''}${result.hpDelta}');
+    }
+    if (result.xpDelta != 0) {
+      parts.add('XP +${result.xpDelta}');
+    }
+    if (action == PetActionType.pet) parts.add('친밀도+');
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          '${_actionLabel(action)} 완료 — ${parts.join(' / ')}',
+        ),
+      ),
+    );
+  }
+
+  static String _actionLabel(PetActionType action) => switch (action) {
+        PetActionType.feed => '먹이',
+        PetActionType.pet => '쓰다듬기',
+        PetActionType.play => '놀아주기',
+      };
+}
+
+class _InteractionBar extends ConsumerWidget {
+  const _InteractionBar({
+    required this.tick,
+    required this.petId,
+    required this.onTap,
+  });
+
+  /// 부모가 setState 로 increment 시 FutureBuilder 가 재구독.
+  final int tick;
+  final int petId;
+  final Future<void> Function(PetActionType) onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FutureBuilder<Map<PetActionType, int>>(
+      key: ValueKey(tick),
+      future: _loadCounts(ref),
+      builder: (context, snapshot) {
+        final counts = snapshot.data ?? const <PetActionType, int>{};
+        return Row(
+          children: [
+            for (final action in PetActionType.values) ...[
+              Expanded(
+                child: _InteractionButton(
+                  action: action,
+                  used: counts[action] ?? 0,
+                  limit: PetInteractionService.dailyLimits[action]!,
+                  onPressed: () => onTap(action),
+                ),
+              ),
+              if (action != PetActionType.values.last)
+                const SizedBox(width: 8),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Future<Map<PetActionType, int>> _loadCounts(WidgetRef ref) async {
+    final repo = ref.read(petInteractionRepositoryProvider);
+    final out = <PetActionType, int>{};
+    for (final a in PetActionType.values) {
+      out[a] = await repo.countTodayByAction(petId: petId, action: a);
+    }
+    return out;
+  }
+}
+
+class _InteractionButton extends StatelessWidget {
+  const _InteractionButton({
+    required this.action,
+    required this.used,
+    required this.limit,
+    required this.onPressed,
+  });
+
+  final PetActionType action;
+  final int used;
+  final int limit;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final remaining = limit - used;
+    final disabled = remaining <= 0;
+    return OutlinedButton(
+      onPressed: disabled ? null : onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_iconFor(action), size: 20),
+          const SizedBox(height: 4),
+          Text(_titleFor(action), style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 2),
+          Text(
+            '$used / $limit',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: disabled
+                  ? theme.colorScheme.outline
+                  : theme.colorScheme.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static IconData _iconFor(PetActionType action) => switch (action) {
+        PetActionType.feed => Icons.restaurant,
+        PetActionType.pet => Icons.pan_tool_alt,
+        PetActionType.play => Icons.sports_baseball,
+      };
+
+  static String _titleFor(PetActionType action) => switch (action) {
+        PetActionType.feed => '먹이 +5 HP',
+        PetActionType.pet => '쓰다듬기',
+        PetActionType.play => '놀아주기 +5 XP',
+      };
+}
+
+class _IntimacyRow extends ConsumerWidget {
+  const _IntimacyRow({required this.petId, required this.tick});
+  final int petId;
+  final int tick;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FutureBuilder<int>(
+      key: ValueKey('intimacy-$tick'),
+      future: ref
+          .read(petInteractionRepositoryProvider)
+          .countAllByAction(petId: petId, action: PetActionType.pet),
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        return _InfoRow('친밀도', '쓰다듬은 횟수 $count회');
+      },
+    );
+  }
 }
 
 class _NoPet extends StatelessWidget {

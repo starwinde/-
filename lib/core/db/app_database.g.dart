@@ -3995,6 +3995,413 @@ class UsageLogsCompanion extends UpdateCompanion<UsageLog> {
   }
 }
 
+class $PetInteractionsTable extends PetInteractions
+    with TableInfo<$PetInteractionsTable, PetInteraction> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PetInteractionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _petIdMeta = const VerificationMeta('petId');
+  @override
+  late final GeneratedColumn<int> petId = GeneratedColumn<int>(
+    'pet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL REFERENCES pets(id)',
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _actionTypeMeta = const VerificationMeta(
+    'actionType',
+  );
+  @override
+  late final GeneratedColumn<String> actionType = GeneratedColumn<String>(
+    'action_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _performedAtMeta = const VerificationMeta(
+    'performedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> performedAt = GeneratedColumn<DateTime>(
+    'performed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    remoteId,
+    petId,
+    userId,
+    actionType,
+    performedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pet_interactions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PetInteraction> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    }
+    if (data.containsKey('pet_id')) {
+      context.handle(
+        _petIdMeta,
+        petId.isAcceptableOrUnknown(data['pet_id']!, _petIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_petIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('action_type')) {
+      context.handle(
+        _actionTypeMeta,
+        actionType.isAcceptableOrUnknown(data['action_type']!, _actionTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actionTypeMeta);
+    }
+    if (data.containsKey('performed_at')) {
+      context.handle(
+        _performedAtMeta,
+        performedAt.isAcceptableOrUnknown(
+          data['performed_at']!,
+          _performedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PetInteraction map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PetInteraction(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      ),
+      petId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pet_id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      actionType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}action_type'],
+      )!,
+      performedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}performed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PetInteractionsTable createAlias(String alias) {
+    return $PetInteractionsTable(attachedDatabase, alias);
+  }
+}
+
+class PetInteraction extends DataClass implements Insertable<PetInteraction> {
+  final int id;
+  final String? remoteId;
+  final int petId;
+  final String userId;
+
+  /// `feed` (먹이) / `pet` (쓰다듬기) / `play` (놀아주기).
+  final String actionType;
+
+  /// 인터랙션이 적용된 시각.
+  final DateTime performedAt;
+  const PetInteraction({
+    required this.id,
+    this.remoteId,
+    required this.petId,
+    required this.userId,
+    required this.actionType,
+    required this.performedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = Variable<String>(remoteId);
+    }
+    map['pet_id'] = Variable<int>(petId);
+    map['user_id'] = Variable<String>(userId);
+    map['action_type'] = Variable<String>(actionType);
+    map['performed_at'] = Variable<DateTime>(performedAt);
+    return map;
+  }
+
+  PetInteractionsCompanion toCompanion(bool nullToAbsent) {
+    return PetInteractionsCompanion(
+      id: Value(id),
+      remoteId: remoteId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteId),
+      petId: Value(petId),
+      userId: Value(userId),
+      actionType: Value(actionType),
+      performedAt: Value(performedAt),
+    );
+  }
+
+  factory PetInteraction.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PetInteraction(
+      id: serializer.fromJson<int>(json['id']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
+      petId: serializer.fromJson<int>(json['petId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      actionType: serializer.fromJson<String>(json['actionType']),
+      performedAt: serializer.fromJson<DateTime>(json['performedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'remoteId': serializer.toJson<String?>(remoteId),
+      'petId': serializer.toJson<int>(petId),
+      'userId': serializer.toJson<String>(userId),
+      'actionType': serializer.toJson<String>(actionType),
+      'performedAt': serializer.toJson<DateTime>(performedAt),
+    };
+  }
+
+  PetInteraction copyWith({
+    int? id,
+    Value<String?> remoteId = const Value.absent(),
+    int? petId,
+    String? userId,
+    String? actionType,
+    DateTime? performedAt,
+  }) => PetInteraction(
+    id: id ?? this.id,
+    remoteId: remoteId.present ? remoteId.value : this.remoteId,
+    petId: petId ?? this.petId,
+    userId: userId ?? this.userId,
+    actionType: actionType ?? this.actionType,
+    performedAt: performedAt ?? this.performedAt,
+  );
+  PetInteraction copyWithCompanion(PetInteractionsCompanion data) {
+    return PetInteraction(
+      id: data.id.present ? data.id.value : this.id,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      petId: data.petId.present ? data.petId.value : this.petId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      actionType: data.actionType.present
+          ? data.actionType.value
+          : this.actionType,
+      performedAt: data.performedAt.present
+          ? data.performedAt.value
+          : this.performedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetInteraction(')
+          ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('petId: $petId, ')
+          ..write('userId: $userId, ')
+          ..write('actionType: $actionType, ')
+          ..write('performedAt: $performedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, remoteId, petId, userId, actionType, performedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PetInteraction &&
+          other.id == this.id &&
+          other.remoteId == this.remoteId &&
+          other.petId == this.petId &&
+          other.userId == this.userId &&
+          other.actionType == this.actionType &&
+          other.performedAt == this.performedAt);
+}
+
+class PetInteractionsCompanion extends UpdateCompanion<PetInteraction> {
+  final Value<int> id;
+  final Value<String?> remoteId;
+  final Value<int> petId;
+  final Value<String> userId;
+  final Value<String> actionType;
+  final Value<DateTime> performedAt;
+  const PetInteractionsCompanion({
+    this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.petId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.actionType = const Value.absent(),
+    this.performedAt = const Value.absent(),
+  });
+  PetInteractionsCompanion.insert({
+    this.id = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    required int petId,
+    required String userId,
+    required String actionType,
+    this.performedAt = const Value.absent(),
+  }) : petId = Value(petId),
+       userId = Value(userId),
+       actionType = Value(actionType);
+  static Insertable<PetInteraction> custom({
+    Expression<int>? id,
+    Expression<String>? remoteId,
+    Expression<int>? petId,
+    Expression<String>? userId,
+    Expression<String>? actionType,
+    Expression<DateTime>? performedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (remoteId != null) 'remote_id': remoteId,
+      if (petId != null) 'pet_id': petId,
+      if (userId != null) 'user_id': userId,
+      if (actionType != null) 'action_type': actionType,
+      if (performedAt != null) 'performed_at': performedAt,
+    });
+  }
+
+  PetInteractionsCompanion copyWith({
+    Value<int>? id,
+    Value<String?>? remoteId,
+    Value<int>? petId,
+    Value<String>? userId,
+    Value<String>? actionType,
+    Value<DateTime>? performedAt,
+  }) {
+    return PetInteractionsCompanion(
+      id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
+      petId: petId ?? this.petId,
+      userId: userId ?? this.userId,
+      actionType: actionType ?? this.actionType,
+      performedAt: performedAt ?? this.performedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (petId.present) {
+      map['pet_id'] = Variable<int>(petId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (actionType.present) {
+      map['action_type'] = Variable<String>(actionType.value);
+    }
+    if (performedAt.present) {
+      map['performed_at'] = Variable<DateTime>(performedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PetInteractionsCompanion(')
+          ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('petId: $petId, ')
+          ..write('userId: $userId, ')
+          ..write('actionType: $actionType, ')
+          ..write('performedAt: $performedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4004,6 +4411,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $OutboxTable outbox = $OutboxTable(this);
   late final $SessionsTable sessions = $SessionsTable(this);
   late final $UsageLogsTable usageLogs = $UsageLogsTable(this);
+  late final $PetInteractionsTable petInteractions = $PetInteractionsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4015,6 +4425,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     outbox,
     sessions,
     usageLogs,
+    petInteractions,
   ];
 }
 
@@ -5906,6 +6317,229 @@ typedef $$UsageLogsTableProcessedTableManager =
       UsageLog,
       PrefetchHooks Function()
     >;
+typedef $$PetInteractionsTableCreateCompanionBuilder =
+    PetInteractionsCompanion Function({
+      Value<int> id,
+      Value<String?> remoteId,
+      required int petId,
+      required String userId,
+      required String actionType,
+      Value<DateTime> performedAt,
+    });
+typedef $$PetInteractionsTableUpdateCompanionBuilder =
+    PetInteractionsCompanion Function({
+      Value<int> id,
+      Value<String?> remoteId,
+      Value<int> petId,
+      Value<String> userId,
+      Value<String> actionType,
+      Value<DateTime> performedAt,
+    });
+
+class $$PetInteractionsTableFilterComposer
+    extends Composer<_$AppDatabase, $PetInteractionsTable> {
+  $$PetInteractionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get petId => $composableBuilder(
+    column: $table.petId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get performedAt => $composableBuilder(
+    column: $table.performedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PetInteractionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PetInteractionsTable> {
+  $$PetInteractionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get petId => $composableBuilder(
+    column: $table.petId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get performedAt => $composableBuilder(
+    column: $table.performedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PetInteractionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PetInteractionsTable> {
+  $$PetInteractionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<int> get petId =>
+      $composableBuilder(column: $table.petId, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get performedAt => $composableBuilder(
+    column: $table.performedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$PetInteractionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PetInteractionsTable,
+          PetInteraction,
+          $$PetInteractionsTableFilterComposer,
+          $$PetInteractionsTableOrderingComposer,
+          $$PetInteractionsTableAnnotationComposer,
+          $$PetInteractionsTableCreateCompanionBuilder,
+          $$PetInteractionsTableUpdateCompanionBuilder,
+          (
+            PetInteraction,
+            BaseReferences<
+              _$AppDatabase,
+              $PetInteractionsTable,
+              PetInteraction
+            >,
+          ),
+          PetInteraction,
+          PrefetchHooks Function()
+        > {
+  $$PetInteractionsTableTableManager(
+    _$AppDatabase db,
+    $PetInteractionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PetInteractionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PetInteractionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PetInteractionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                Value<int> petId = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> actionType = const Value.absent(),
+                Value<DateTime> performedAt = const Value.absent(),
+              }) => PetInteractionsCompanion(
+                id: id,
+                remoteId: remoteId,
+                petId: petId,
+                userId: userId,
+                actionType: actionType,
+                performedAt: performedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String?> remoteId = const Value.absent(),
+                required int petId,
+                required String userId,
+                required String actionType,
+                Value<DateTime> performedAt = const Value.absent(),
+              }) => PetInteractionsCompanion.insert(
+                id: id,
+                remoteId: remoteId,
+                petId: petId,
+                userId: userId,
+                actionType: actionType,
+                performedAt: performedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PetInteractionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PetInteractionsTable,
+      PetInteraction,
+      $$PetInteractionsTableFilterComposer,
+      $$PetInteractionsTableOrderingComposer,
+      $$PetInteractionsTableAnnotationComposer,
+      $$PetInteractionsTableCreateCompanionBuilder,
+      $$PetInteractionsTableUpdateCompanionBuilder,
+      (
+        PetInteraction,
+        BaseReferences<_$AppDatabase, $PetInteractionsTable, PetInteraction>,
+      ),
+      PetInteraction,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5921,4 +6555,6 @@ class $AppDatabaseManager {
       $$SessionsTableTableManager(_db, _db.sessions);
   $$UsageLogsTableTableManager get usageLogs =>
       $$UsageLogsTableTableManager(_db, _db.usageLogs);
+  $$PetInteractionsTableTableManager get petInteractions =>
+      $$PetInteractionsTableTableManager(_db, _db.petInteractions);
 }

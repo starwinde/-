@@ -215,8 +215,9 @@ void main() {
   });
 
   group('Drift schemaVersion', () {
-    test('AppDatabase reports schemaVersion=4 (ADR 0004 v3→v4)', () {
-      expect(db.schemaVersion, 4);
+    test('AppDatabase reports schemaVersion=5 (PRD §2.6 v4→v5 PetInteractions)',
+        () {
+      expect(db.schemaVersion, 5);
     });
 
     test('usage_logs table created on fresh DB', () async {
