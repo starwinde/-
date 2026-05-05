@@ -99,8 +99,7 @@ class _ScheduleCreatePageState extends ConsumerState<ScheduleCreatePage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final userId = ref.read(authProvider).value?.id;
-    if (userId == null) return;
+    final userId = ref.read(authProvider).value?.id ?? 'local';
 
     final date = _selectedDate ?? DateTime.now();
     DateTime? startDt;

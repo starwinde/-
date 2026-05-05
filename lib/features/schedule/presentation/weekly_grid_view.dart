@@ -135,10 +135,7 @@ class _WeeklyGridViewState extends ConsumerState<WeeklyGridView> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final userId = authState.value?.id;
-    if (userId == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    final userId = authState.value?.id ?? 'local';
     final async = ref.watch(allActiveSchedulesProvider(userId));
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),

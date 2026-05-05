@@ -76,10 +76,12 @@ class UsageLogRepository {
   }
 
   /// [since] 이후 누적된 패키지별 totalMs 합계 — 내림차순 top-[limit].
+  /// [excludePackages] 에 포함된 패키지는 집계에서 제외 (예: 런처).
   Future<List<({String packageName, int totalMs})>> aggregateTopPackages({
     required String userId,
     required DateTime since,
     int limit = 3,
+    Set<String> excludePackages = const {},
   }) async {
     final rows = await (_db.select(_db.usageLogs)
           ..where(
@@ -90,6 +92,7 @@ class UsageLogRepository {
         .get();
     final agg = <String, int>{};
     for (final r in rows) {
+      if (excludePackages.contains(r.packageName)) continue;
       agg[r.packageName] = (agg[r.packageName] ?? 0) + r.totalMs;
     }
     final sorted = agg.entries.toList()
@@ -101,9 +104,11 @@ class UsageLogRepository {
   }
 
   /// [since] 이후 패키지 무관 누적 totalMs.
+  /// [excludePackages] 에 포함된 패키지는 합계에서 제외.
   Future<int> totalMsSince({
     required String userId,
     required DateTime since,
+    Set<String> excludePackages = const {},
   }) async {
     final rows = await (_db.select(_db.usageLogs)
           ..where(
@@ -112,7 +117,10 @@ class UsageLogRepository {
                 t.capturedAt.isBiggerOrEqualValue(since),
           ))
         .get();
-    return rows.fold<int>(0, (acc, r) => acc + r.totalMs);
+    return rows.fold<int>(
+      0,
+      (acc, r) => excludePackages.contains(r.packageName) ? acc : acc + r.totalMs,
+    );
   }
 }
 

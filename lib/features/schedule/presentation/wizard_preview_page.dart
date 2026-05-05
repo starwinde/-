@@ -54,7 +54,7 @@ class _WizardPreviewPageState extends ConsumerState<WizardPreviewPage> {
     try {
       final service = ref.read(weeklyWizardServiceProvider);
       final weekStart = WeeklyGridView.mondayOfWeek(DateTime.now());
-      final userId = ref.read(authProvider).value?.id;
+      final userId = ref.read(authProvider).value?.id ?? 'local';
       final existing = await _fetchExistingThisWeek(userId, weekStart);
       final res = await service.generate(
         answers: answers,
@@ -103,7 +103,7 @@ class _WizardPreviewPageState extends ConsumerState<WizardPreviewPage> {
     try {
       final service = ref.read(weeklyWizardServiceProvider);
       final weekStart = WeeklyGridView.mondayOfWeek(DateTime.now());
-      final userId = ref.read(authProvider).value?.id;
+      final userId = ref.read(authProvider).value?.id ?? 'local';
       final refined = await service.refine(
         answers: answers,
         weekStart: weekStart,
@@ -182,7 +182,7 @@ class _WizardPreviewPageState extends ConsumerState<WizardPreviewPage> {
     try {
       final service = ref.read(weeklyWizardServiceProvider);
       final weekStart = WeeklyGridView.mondayOfWeek(DateTime.now());
-      final userId = ref.read(authProvider).value?.id;
+      final userId = ref.read(authProvider).value?.id ?? 'local';
       final enhanced = await service.enhance(
         answers: answers,
         weekStart: weekStart,
@@ -244,13 +244,7 @@ class _WizardPreviewPageState extends ConsumerState<WizardPreviewPage> {
   Future<void> _apply() async {
     final res = _response;
     if (res == null || res.items.isEmpty || _applying) return;
-    final userId = ref.read(authProvider).value?.id;
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인이 필요합니다')),
-      );
-      return;
-    }
+    final userId = ref.read(authProvider).value?.id ?? 'local';
 
     final weekStartForRedetect = WeeklyGridView.mondayOfWeek(DateTime.now());
     final answersForRedetect =

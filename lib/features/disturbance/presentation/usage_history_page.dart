@@ -30,12 +30,9 @@ class _UsageHistoryPageState extends ConsumerState<UsageHistoryPage> {
 
   Future<void> _load() async {
     setState(() => _loading = true);
-    final user = ref.read(authProvider).value;
-    if (user == null) {
-      if (mounted) setState(() => _loading = false);
-      return;
-    }
+    final userId = ref.read(authProvider).value?.id ?? 'local';
     final repo = ref.read(usageLogRepositoryProvider);
+    final launcherSet = await ref.read(launcherPackagesProvider.future);
     final now = DateTime.now();
     final since = switch (_range) {
       _Range.today => DateTime(now.year, now.month, now.day),
@@ -43,23 +40,26 @@ class _UsageHistoryPageState extends ConsumerState<UsageHistoryPage> {
       _Range.month => now.subtract(const Duration(days: 30)),
     };
     final agg = await repo.aggregateTopPackages(
-      userId: user.id,
+      userId: userId,
       since: since,
       limit: 20,
+      excludePackages: launcherSet,
     );
     // Schedule grouping fetched per-date, then flattened
     final all = <UsageLog>[];
     if (_range == _Range.today) {
-      all.addAll(await repo.getForDate(user.id, now));
+      all.addAll(await repo.getForDate(userId, now));
     } else {
       final days = _range == _Range.week ? 7 : 30;
       for (var i = 0; i < days; i++) {
         all.addAll(await repo.getForDate(
-          user.id,
+          userId,
           now.subtract(Duration(days: i)),
         ));
       }
     }
+    // launcher 패키지는 일정별 상세에서도 제외 — top-3 와 동일 정책 유지.
+    all.removeWhere((r) => launcherSet.contains(r.packageName));
     final grouped = <int?, List<UsageLog>>{};
     for (final r in all) {
       grouped.putIfAbsent(r.scheduleId, () => []).add(r);

@@ -32,6 +32,20 @@ Future<List<String>> installedPackages(Ref ref) async {
   return api.getInstalledPackages();
 }
 
+/// 현재 디바이스에서 `Intent.CATEGORY_HOME` 을 처리하는 모든 패키지 (런처).
+/// 사용 통계 표시 시 distraction 통계에서 제외하는 데 사용. 결과는
+/// keepAlive 캐시 — 사용자가 새 런처를 설치하기 전까지 안정적.
+@Riverpod(keepAlive: true)
+Future<Set<String>> launcherPackages(Ref ref) async {
+  final api = ref.watch(usageApiProvider);
+  try {
+    final list = await api.getLauncherPackages();
+    return list.toSet();
+  } on Exception {
+    return const <String>{};
+  }
+}
+
 /// 패키지명 → 사람 표시명 캐시. UI 가 batch 로 lookup 후 결과 캐시.
 @Riverpod(keepAlive: true)
 class AppLabelCache extends _$AppLabelCache {

@@ -22,10 +22,7 @@ class _DataExportPageState extends ConsumerState<DataExportPage> {
   Future<void> _export() async {
     setState(() => _busy = true);
     try {
-      final userId = ref.read(authProvider).value?.id;
-      if (userId == null) {
-        throw Exception('로그인이 필요합니다.');
-      }
+      final userId = ref.read(authProvider).value?.id ?? 'local';
       final service = ref.read(dataExportServiceProvider);
       // v1.0: 수익화 기능 이월(PRD §2.17 rev 18) — Pro quota 게이팅 비활성,
       // hasQuota/recordUsage 호출은 v1.1 수익화 도입 시 restore.

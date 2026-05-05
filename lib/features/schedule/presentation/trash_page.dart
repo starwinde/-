@@ -14,12 +14,7 @@ class TrashPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userId = ref.watch(authProvider).value?.id;
-    if (userId == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    final userId = ref.watch(authProvider).value?.id ?? 'local';
 
     final trashAsync = ref.watch(trashSchedulesProvider(userId));
 

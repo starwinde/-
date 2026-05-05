@@ -277,4 +277,26 @@ class UsageApi {
     ;
     return (pigeonVar_replyValue! as Map<Object?, Object?>).cast<String, String>();
   }
+
+  /// `Intent.CATEGORY_HOME` 을 처리하는 모든 패키지 (기본 + 설치된 모든 런처).
+  /// 사용 통계 표시 시 launcher 를 distraction 통계에서 제외하기 위함.
+  /// OS 가 보장하는 contract — OEM/커스텀 런처 무관 자동 감지.
+  Future<List<String>> getLauncherPackages() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.routinemon.UsageApi.getLauncherPackages$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return (pigeonVar_replyValue! as List<Object?>).cast<String>();
+  }
 }

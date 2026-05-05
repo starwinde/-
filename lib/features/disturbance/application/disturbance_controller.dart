@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:routinemon/core/db/app_database.dart';
 import 'package:routinemon/core/native/disturbance_api.g.dart';
 import 'package:routinemon/core/native/usage_api.g.dart';
 import 'package:routinemon/core/native/usage_bridge.dart';
@@ -96,11 +95,10 @@ class DisturbanceController with WidgetsBindingObserver {
 
   Future<void> _onAppPaused() async {
     debugPrint('[Disturbance] paused');
-    final user = ref.read(authProvider).value;
-    debugPrint('[Disturbance] user=${user?.id}');
-    if (user == null) return;
+    final userId = ref.read(authProvider).value?.id ?? 'local';
+    debugPrint('[Disturbance] user=$userId');
     final repo = ref.read(scheduleRepositoryProvider);
-    final all = await repo.watchAllActive(user.id).first;
+    final all = await repo.watchAllActive(userId).first;
     final schedule = findCurrentActiveSchedule(all, DateTime.now());
     debugPrint(
         '[Disturbance] schedule=${schedule?.id} allow=${schedule?.allowDisruption} intensity=${schedule?.disruptionIntensity} (rows=${all.length})');
@@ -138,13 +136,10 @@ class DisturbanceController with WidgetsBindingObserver {
   }
 
   Future<void> _onAppResumed() async {
-    final user = ref.read(authProvider).value;
-    Schedule? activeSchedule;
-    if (user != null) {
-      final repo = ref.read(scheduleRepositoryProvider);
-      final all = await repo.watchAllActive(user.id).first;
-      activeSchedule = findCurrentActiveSchedule(all, DateTime.now());
-    }
+    final userId = ref.read(authProvider).value?.id ?? 'local';
+    final repo = ref.read(scheduleRepositoryProvider);
+    final all = await repo.watchAllActive(userId).first;
+    final activeSchedule = findCurrentActiveSchedule(all, DateTime.now());
 
     // ADR 0004: paused→resumed 사이의 사용 통계를 누적. 모든 단계 공통.
     final pausedAt = _pausedAt;
@@ -152,11 +147,11 @@ class DisturbanceController with WidgetsBindingObserver {
     _pausedAt = null;
     _pausedScheduleId = null;
     debugPrint(
-      '[Disturbance] resumed pausedAt=$pausedAt pausedScheduleId=$pausedScheduleId user=${user?.id}',
+      '[Disturbance] resumed pausedAt=$pausedAt pausedScheduleId=$pausedScheduleId user=$userId',
     );
-    if (user != null && pausedAt != null) {
+    if (pausedAt != null) {
       await _recordUsage(
-        userId: user.id,
+        userId: userId,
         scheduleId: pausedScheduleId,
         rangeStart: pausedAt,
         rangeEnd: DateTime.now(),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,7 +18,8 @@ class UsageLogTile extends ConsumerStatefulWidget {
   ConsumerState<UsageLogTile> createState() => _UsageLogTileState();
 }
 
-class _UsageLogTileState extends ConsumerState<UsageLogTile> {
+class _UsageLogTileState extends ConsumerState<UsageLogTile>
+    with WidgetsBindingObserver {
   List<({String packageName, int totalMs})> _top = const [];
   Map<String, String> _labels = const {};
   int _totalMs = 0;
@@ -25,25 +28,45 @@ class _UsageLogTileState extends ConsumerState<UsageLogTile> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  Future<void> _load() async {
-    final user = ref.read(authProvider).value;
-    if (user == null) {
-      if (mounted) setState(() => _loaded = true);
-      return;
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // DisturbanceController 가 resumed 시점에 usage_logs 를 추가하므로
+      // 짧게 대기 후 재로드해야 새 행이 잡힌다.
+      unawaited(
+        Future<void>.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) return _load();
+          return null;
+        }),
+      );
     }
+  }
+
+  Future<void> _load() async {
+    final userId = ref.read(authProvider).value?.id ?? 'local';
     final repo = ref.read(usageLogRepositoryProvider);
+    final launcherSet = await ref.read(launcherPackagesProvider.future);
     final now = DateTime.now();
     final dayStart = DateTime(now.year, now.month, now.day);
     final top = await repo.aggregateTopPackages(
-      userId: user.id,
+      userId: userId,
       since: dayStart,
+      excludePackages: launcherSet,
     );
     final total = await repo.totalMsSince(
-      userId: user.id,
+      userId: userId,
       since: dayStart,
+      excludePackages: launcherSet,
     );
     final labels = await ref
         .read(appLabelCacheProvider.notifier)

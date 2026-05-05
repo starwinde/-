@@ -262,6 +262,12 @@ interface UsageApi {
    * 미설치/시스템 패키지는 결과 Map 에서 누락 — UI 가 fallback 으로 packageName 사용.
    */
   fun getAppLabels(packages: List<String>): Map<String, String>
+  /**
+   * `Intent.CATEGORY_HOME` 을 처리하는 모든 패키지 (기본 + 설치된 모든 런처).
+   * 사용 통계 표시 시 launcher 를 distraction 통계에서 제외하기 위함.
+   * OS 가 보장하는 contract — OEM/커스텀 런처 무관 자동 감지.
+   */
+  fun getLauncherPackages(): List<String>
 
   companion object {
     /** The codec used by UsageApi. */
@@ -344,6 +350,21 @@ interface UsageApi {
             val packagesArg = args[0] as List<String>
             val wrapped: List<Any?> = try {
               listOf(api.getAppLabels(packagesArg))
+            } catch (exception: Throwable) {
+              UsageApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.routinemon.UsageApi.getLauncherPackages$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getLauncherPackages())
             } catch (exception: Throwable) {
               UsageApiPigeonUtils.wrapError(exception)
             }
