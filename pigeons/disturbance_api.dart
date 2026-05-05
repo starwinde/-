@@ -69,4 +69,18 @@ abstract class DisturbanceApi {
 
   /// 현재 표시된 disturbance 오버레이를 즉시 해제.
   void dismissOverlay();
+
+  /// 활성 일정 동안 시스템 알림 영역에 sticky 알림을 표시 — USB 연결
+  /// 알림과 동일한 패턴 (`setOngoing(true)` foreground service notification).
+  /// 사용자는 swipe 로 지울 수 없고 "모두 지우기" 도 무시. 일정 종료/변경
+  /// 시 [stopScheduleNotification] 또는 [updateScheduleNotification] 호출.
+  /// 동일 service 인스턴스는 idempotent — 이미 떠 있으면 콘텐츠만 갱신.
+  void startScheduleNotification(String title, String subtitle);
+
+  /// 떠 있는 일정 알림의 텍스트만 갱신 (예: 남은 분 update).
+  /// 알림이 없으면 새로 시작 — start 와 동작 동일.
+  void updateScheduleNotification(String title, String subtitle);
+
+  /// 일정 알림 즉시 해제 — service stop.
+  void stopScheduleNotification();
 }

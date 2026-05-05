@@ -17,6 +17,7 @@ import com.starwinde.routinemon.DisturbanceApi
 import com.starwinde.routinemon.admin.RoutinemonDeviceAdminReceiver
 import com.starwinde.routinemon.overlay.DisturbanceOverlayController
 import com.starwinde.routinemon.service.DisturbanceForegroundService
+import com.starwinde.routinemon.service.ScheduleForegroundService
 
 /**
  * Native implementation of [DisturbanceApi] for T5.21 (일정별 방해 허용).
@@ -149,5 +150,19 @@ class DisturbanceApiImpl(private val context: Context) : DisturbanceApi {
 
     override fun dismissOverlay() {
         overlay.dismiss()
+    }
+
+    override fun startScheduleNotification(title: String, subtitle: String) {
+        ScheduleForegroundService.start(context, title, subtitle)
+    }
+
+    override fun updateScheduleNotification(title: String, subtitle: String) {
+        // start 와 동일 — startForegroundService idempotent, onStartCommand 가
+        // notify() 재호출하여 콘텐츠 갱신.
+        ScheduleForegroundService.start(context, title, subtitle)
+    }
+
+    override fun stopScheduleNotification() {
+        ScheduleForegroundService.stop(context)
     }
 }

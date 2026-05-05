@@ -401,4 +401,66 @@ class DisturbanceApi {
     )
     ;
   }
+
+  /// 활성 일정 동안 시스템 알림 영역에 sticky 알림을 표시 — USB 연결
+  /// 알림과 동일한 패턴 (`setOngoing(true)` foreground service notification).
+  /// 사용자는 swipe 로 지울 수 없고 "모두 지우기" 도 무시. 일정 종료/변경
+  /// 시 [stopScheduleNotification] 또는 [updateScheduleNotification] 호출.
+  /// 동일 service 인스턴스는 idempotent — 이미 떠 있으면 콘텐츠만 갱신.
+  Future<void> startScheduleNotification(String title, String subtitle) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.routinemon.DisturbanceApi.startScheduleNotification$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[title, subtitle]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  /// 떠 있는 일정 알림의 텍스트만 갱신 (예: 남은 분 update).
+  /// 알림이 없으면 새로 시작 — start 와 동작 동일.
+  Future<void> updateScheduleNotification(String title, String subtitle) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.routinemon.DisturbanceApi.updateScheduleNotification$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[title, subtitle]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  /// 일정 알림 즉시 해제 — service stop.
+  Future<void> stopScheduleNotification() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.routinemon.DisturbanceApi.stopScheduleNotification$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
 }

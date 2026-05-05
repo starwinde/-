@@ -85,6 +85,13 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 
+        <!-- 활성 일정 sticky 알림 (USB 알림 패턴) — 사용자가 swipe 로 못 지움.
+             ScheduleSessionTrigger 가 일정 진입/종료 시 start/stop 호출. -->
+        <service
+            android:name=".service.ScheduleForegroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
         <!-- T5.21 방해 허용 L3: DeviceAdminReceiver. force-lock policy only.
              User must grant device-admin in system settings via
              DisturbanceApi.requestDeviceAdmin(). -->

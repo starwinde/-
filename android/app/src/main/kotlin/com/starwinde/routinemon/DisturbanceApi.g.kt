@@ -108,6 +108,21 @@ interface DisturbanceApi {
   fun showBlockFullscreen()
   /** 현재 표시된 disturbance 오버레이를 즉시 해제. */
   fun dismissOverlay()
+  /**
+   * 활성 일정 동안 시스템 알림 영역에 sticky 알림을 표시 — USB 연결
+   * 알림과 동일한 패턴 (`setOngoing(true)` foreground service notification).
+   * 사용자는 swipe 로 지울 수 없고 "모두 지우기" 도 무시. 일정 종료/변경
+   * 시 [stopScheduleNotification] 또는 [updateScheduleNotification] 호출.
+   * 동일 service 인스턴스는 idempotent — 이미 떠 있으면 콘텐츠만 갱신.
+   */
+  fun startScheduleNotification(title: String, subtitle: String)
+  /**
+   * 떠 있는 일정 알림의 텍스트만 갱신 (예: 남은 분 update).
+   * 알림이 없으면 새로 시작 — start 와 동작 동일.
+   */
+  fun updateScheduleNotification(title: String, subtitle: String)
+  /** 일정 알림 즉시 해제 — service stop. */
+  fun stopScheduleNotification()
 
   companion object {
     /** The codec used by DisturbanceApi. */
@@ -383,6 +398,60 @@ interface DisturbanceApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.dismissOverlay()
+              listOf(null)
+            } catch (exception: Throwable) {
+              DisturbanceApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.routinemon.DisturbanceApi.startScheduleNotification$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val titleArg = args[0] as String
+            val subtitleArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.startScheduleNotification(titleArg, subtitleArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              DisturbanceApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.routinemon.DisturbanceApi.updateScheduleNotification$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val titleArg = args[0] as String
+            val subtitleArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.updateScheduleNotification(titleArg, subtitleArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              DisturbanceApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.routinemon.DisturbanceApi.stopScheduleNotification$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.stopScheduleNotification()
               listOf(null)
             } catch (exception: Throwable) {
               DisturbanceApiPigeonUtils.wrapError(exception)

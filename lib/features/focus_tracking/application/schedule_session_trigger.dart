@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:routinemon/core/db/app_database.dart';
+import 'package:routinemon/core/native/disturbance_api.g.dart';
 import 'package:routinemon/core/native/usage_bridge.dart';
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/focus_tracking/data/session_repository.dart';
@@ -19,10 +20,14 @@ import 'package:routinemon/features/schedule/application/schedule_notifier.dart'
 /// [FocusForegroundService] continues sampling and caches deltas, which
 /// are merged on resume.
 class ScheduleSessionTrigger {
-  ScheduleSessionTrigger({required this.ref});
+  ScheduleSessionTrigger({required this.ref, DisturbanceApi? api})
+      : _api = api ?? DisturbanceApi();
 
   /// Riverpod ref used to read repos / providers each tick.
   final Ref ref;
+
+  /// Native bridge for sticky 일정 알림 (USB 알림 패턴).
+  final DisturbanceApi _api;
 
   /// Routinemon's own package — excluded from "phone usage" classification.
   static const _selfPackage = 'com.starwinde.routinemon';
@@ -49,6 +54,8 @@ class ScheduleSessionTrigger {
     if (_started) return;
     _started = true;
     _lastPollMs = DateTime.now().millisecondsSinceEpoch;
+    // 즉시 1회 tick — 60초 기다리지 않고 알림/세션 wiring 즉시 반영.
+    unawaited(_tick());
     _timer = Timer.periodic(const Duration(seconds: 60), (_) {
       unawaited(_tick());
     });
@@ -66,6 +73,16 @@ class ScheduleSessionTrigger {
           .endSession(_activeSessionId!, DateTime.now());
       _activeSessionId = null;
       _activeScheduleId = null;
+    }
+    unawaited(_safe(_api.stopScheduleNotification));
+  }
+
+  /// Native call wrapper — 권한 미허용/플랫폼 channel 미준비 등은 swallow.
+  Future<void> _safe(Future<void> Function() fn) async {
+    try {
+      await fn();
+    } on Exception {
+      // ignored
     }
   }
 
@@ -88,6 +105,8 @@ class ScheduleSessionTrigger {
       }
       _activeSessionId = null;
       _activeScheduleId = null;
+      // 알림 정리 — 다음 분기에서 새 일정이 시작되면 다시 표시.
+      unawaited(_safe(_api.stopScheduleNotification));
     }
 
     // No schedule running → just rotate the poll window and exit.
@@ -104,6 +123,12 @@ class ScheduleSessionTrigger {
       plannedDurationMin: _plannedMinutes(current),
     );
     _activeScheduleId = current.id;
+
+    // Sticky 알림 갱신 — USB 알림 패턴, 사용자가 swipe 로 못 지움.
+    final subtitle = _notificationSubtitle(current, now);
+    unawaited(
+      _safe(() => _api.updateScheduleNotification(current.title, subtitle)),
+    );
 
     // Sample usage for the elapsed window.
     final api = ref.read(usageApiProvider);
@@ -134,6 +159,17 @@ class ScheduleSessionTrigger {
     final end = s.endTime;
     if (start == null || end == null) return 0;
     return end.difference(start).inMinutes;
+  }
+
+  /// 알림 본문 텍스트 — "16:19 까지 (25분 남음)" 형태.
+  String _notificationSubtitle(Schedule s, DateTime now) {
+    final end = s.endTime;
+    if (end == null) return '진행 중';
+    final remaining = end.difference(now).inMinutes;
+    final hh = end.hour.toString().padLeft(2, '0');
+    final mm = end.minute.toString().padLeft(2, '0');
+    if (remaining <= 0) return '$hh:$mm 까지';
+    return '$hh:$mm 까지 ($remaining분 남음)';
   }
 }
 
