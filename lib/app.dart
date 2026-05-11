@@ -27,6 +27,7 @@ import 'package:routinemon/features/pet/presentation/pet_detail_page.dart';
 import 'package:routinemon/features/schedule/presentation/schedule_create_page.dart';
 import 'package:routinemon/features/schedule/presentation/schedule_page.dart';
 import 'package:routinemon/features/schedule/presentation/trash_page.dart';
+import 'package:routinemon/features/schedule/presentation/role_wizard_page.dart';
 import 'package:routinemon/features/schedule/presentation/wizard_page.dart';
 import 'package:routinemon/features/schedule/presentation/wizard_preview_page.dart';
 import 'package:routinemon/features/settings/presentation/settings_page.dart';
@@ -128,6 +129,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/schedule/wizard',
         builder: (context, state) => const WizardPage(),
+      ),
+      GoRoute(
+        path: '/schedule/wizard-v3',
+        builder: (context, state) => const RoleWizardPage(),
       ),
       GoRoute(
         path: '/schedule/wizard/preview',
