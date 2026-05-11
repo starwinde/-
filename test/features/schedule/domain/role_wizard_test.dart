@@ -60,24 +60,53 @@ void main() {
     });
   });
 
-  group('Role.questionsFor — non-student roles (stub)', () {
-    test('worker returns empty list (TODO — fill after user wake)', () {
-      expect(questionsFor(Role.worker), isEmpty);
+  group('Role.questionsFor — all 6 non-student roles each have 7 questions', () {
+    for (final role in [
+      Role.worker,
+      Role.freelancer,
+      Role.homemaker,
+      Role.selfEmployed,
+      Role.soldier,
+      Role.other,
+    ]) {
+      test('${role.name} has exactly 7 questions', () {
+        expect(questionsFor(role).length, 7,
+            reason: '${role.displayLabel} should ship 7 follow-up questions');
+      });
+      test('${role.name} questions have unique ids', () {
+        final ids = questionsFor(role).map((q) => q.id).toSet();
+        expect(ids.length, 7);
+      });
+      test('${role.name} questions each have non-empty option list', () {
+        for (final q in questionsFor(role)) {
+          expect(q.options, isNotEmpty);
+          final optionIds = q.options.map((o) => o.id).toSet();
+          expect(optionIds.length, q.options.length,
+              reason: 'option ids must be unique within question ${q.id}');
+        }
+      });
+    }
+  });
+
+  group('Role identity-shaping questions (per role first-question heuristic)', () {
+    test('worker first question is work-form (근무 형태)', () {
+      expect(questionsFor(Role.worker).first.id, 'work_form');
+      expect(questionsFor(Role.worker).first.label, contains('근무'));
     });
-    test('freelancer returns empty list (TODO)', () {
-      expect(questionsFor(Role.freelancer), isEmpty);
+    test('freelancer first question is focus-window (집중 가능 시간대)', () {
+      expect(questionsFor(Role.freelancer).first.id, 'focus_window');
     });
-    test('homemaker returns empty list (TODO)', () {
-      expect(questionsFor(Role.homemaker), isEmpty);
+    test('homemaker first question is care-load (돌봄 부담)', () {
+      expect(questionsFor(Role.homemaker).first.id, 'care_load');
     });
-    test('selfEmployed returns empty list (TODO)', () {
-      expect(questionsFor(Role.selfEmployed), isEmpty);
+    test('selfEmployed first question is business-hours (영업 시간대)', () {
+      expect(questionsFor(Role.selfEmployed).first.id, 'business_hours');
     });
-    test('soldier returns empty list (TODO)', () {
-      expect(questionsFor(Role.soldier), isEmpty);
+    test('soldier first question is service-type (복무 형태)', () {
+      expect(questionsFor(Role.soldier).first.id, 'service_type');
     });
-    test('other returns empty list (TODO)', () {
-      expect(questionsFor(Role.other), isEmpty);
+    test('other first question is daily-rhythm (생활 리듬)', () {
+      expect(questionsFor(Role.other).first.id, 'daily_rhythm');
     });
   });
 

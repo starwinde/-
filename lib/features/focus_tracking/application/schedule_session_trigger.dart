@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:routinemon/core/db/app_database.dart';
 import 'package:routinemon/core/native/disturbance_api.g.dart';
 import 'package:routinemon/core/native/usage_bridge.dart';
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
 import 'package:routinemon/features/focus_tracking/data/session_repository.dart';
+import 'package:routinemon/features/focus_tracking/domain/realtime_hp_rule.dart';
+import 'package:routinemon/features/pet/data/pet_repository.dart';
 import 'package:routinemon/features/schedule/application/active_schedule_provider.dart';
 import 'package:routinemon/features/schedule/application/schedule_notifier.dart';
 
@@ -152,6 +155,40 @@ class ScheduleSessionTrigger {
       focusedMinDelta: phoneInUse ? 0 : 1,
       blacklistMinDelta: phoneInUse ? 1 : 0,
     );
+
+    // UC3 / Eng P1 — real-time HP feedback inline. Opt-in via SharedPreferences
+    // (default off). Reuses existing 60s tick — no 4th foreground service.
+    final prefs = await SharedPreferences.getInstance();
+    if (RealtimeHpRule.isFeatureEnabled(
+        prefs.getBool(RealtimeHpRule.featureFlagKey))) {
+      await _applyRealtimeHp(userId: userId, phoneInUse: phoneInUse);
+    }
+  }
+
+  Future<void> _applyRealtimeHp({
+    required String userId,
+    required bool phoneInUse,
+  }) async {
+    try {
+      final petRepo = ref.read(petRepositoryProvider);
+      final pet = await petRepo.getActivePet(userId);
+      if (pet == null) return;
+      final outcome = RealtimeHpRule.computeMinuteOutcome(
+        currentHp: pet.hp,
+        currentXp: pet.xp,
+        phoneInUse: phoneInUse,
+        startingIsAlive: pet.isAlive,
+      );
+      if (outcome.delta == 0 && outcome.newHp == pet.hp) return;
+      await petRepo.applySettlement(
+        petId: pet.id,
+        newXp: outcome.newXp,
+        newHp: outcome.newHp,
+        isAlive: outcome.isAlive,
+      );
+    } on Exception {
+      // 회복 가능 에러는 무시 — 다음 tick 에서 재시도.
+    }
   }
 
   int _plannedMinutes(Schedule s) {
