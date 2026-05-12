@@ -7,6 +7,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:routinemon/features/schedule/application/wizard_state.dart';
+import 'package:routinemon/features/schedule/data/role_answer_projector.dart';
 import 'package:routinemon/features/schedule/domain/role_wizard.dart';
 
 class RoleWizardPage extends ConsumerStatefulWidget {
@@ -36,10 +39,38 @@ class _RoleWizardPageState extends ConsumerState<RoleWizardPage> {
       _step += 1;
     });
     if (_step > total) {
-      // 완료 — 미리보기 라우트로 (기존 /schedule/wizard/preview 가 WizardState 의존이라
-      // 본 단계에서는 단순 다이얼로그로 결과 표시. 사용자 결정 후 wire 변경 가능).
-      _showCompletion();
+      _completeAndNavigateToPreview();
     }
+  }
+
+  /// Projects [RoleAnswerDraft] → [WizardAnswers], pushes into the legacy
+  /// [WizardState] notifier so [WizardPreviewPage] picks it up, then routes
+  /// to /schedule/wizard/preview.
+  void _completeAndNavigateToPreview() {
+    final draft = _draft;
+    if (draft == null) return;
+    final answers = RoleAnswerProjector.project(draft);
+    final notifier = ref.read(wizardStateProvider.notifier)
+      ..setStatus(answers.status)
+      ..setWakeTime(answers.wakeTime)
+      ..setSleepTime(answers.sleepTime)
+      ..setChronotype(answers.chronotype)
+      ..setWorkDays(answers.workDays)
+      ..setWorkHours(answers.workHours)
+      ..setMealPattern(answers.mealPattern)
+      ..setFocusTime(answers.focusTime)
+      ..setExercise(answers.exercise)
+      ..setHobby(answers.hobby)
+      ..setGoalFocus(answers.goalFocus)
+      ..setFreeTime(answers.freeTime);
+    if (answers.commuteTime != null) {
+      notifier.setCommuteTime(answers.commuteTime!);
+    }
+    if (answers.exercisePreferredTime != null) {
+      notifier.setExercisePreferredTime(answers.exercisePreferredTime!);
+    }
+    notifier.setFixed(answers.fixedSchedules);
+    context.go('/schedule/wizard/preview');
   }
 
   void _goBack() {
@@ -52,26 +83,6 @@ class _RoleWizardPageState extends ConsumerState<RoleWizardPage> {
     } else {
       Navigator.of(context).maybePop();
     }
-  }
-
-  Future<void> _showCompletion() async {
-    if (!mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('위저드 완료'),
-        content: Text(
-          '${_draft?.role.displayLabel ?? "-"} 답변 ${_draft?.answers.length ?? 0}개 '
-          '수집됨. 미리보기 wire-in 은 사용자 결정 후 진행.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('확인'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override

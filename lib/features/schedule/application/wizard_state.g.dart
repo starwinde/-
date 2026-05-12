@@ -73,21 +73,36 @@ abstract class _$RefinementSessionNotifier
 }
 
 /// Holds the in-progress answers for the weekly wizard.
+///
+/// keepAlive: state must survive page navigation. The new role-based wizard
+/// (RoleWizardPage) sets answers then unmounts before [WizardPreviewPage]
+/// mounts and reads them — without keepAlive, auto-dispose wipes state
+/// between the two pages.
 
 @ProviderFor(WizardState)
 final wizardStateProvider = WizardStateProvider._();
 
 /// Holds the in-progress answers for the weekly wizard.
+///
+/// keepAlive: state must survive page navigation. The new role-based wizard
+/// (RoleWizardPage) sets answers then unmounts before [WizardPreviewPage]
+/// mounts and reads them — without keepAlive, auto-dispose wipes state
+/// between the two pages.
 final class WizardStateProvider
     extends $NotifierProvider<WizardState, WizardDraft> {
   /// Holds the in-progress answers for the weekly wizard.
+  ///
+  /// keepAlive: state must survive page navigation. The new role-based wizard
+  /// (RoleWizardPage) sets answers then unmounts before [WizardPreviewPage]
+  /// mounts and reads them — without keepAlive, auto-dispose wipes state
+  /// between the two pages.
   WizardStateProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'wizardStateProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -108,9 +123,14 @@ final class WizardStateProvider
   }
 }
 
-String _$wizardStateHash() => r'3dc2ff4c1fb1c12bcca318cbda4853c941c2e24c';
+String _$wizardStateHash() => r'7c0f1abffaabcb99f71c080bee9d023d7c94f73c';
 
 /// Holds the in-progress answers for the weekly wizard.
+///
+/// keepAlive: state must survive page navigation. The new role-based wizard
+/// (RoleWizardPage) sets answers then unmounts before [WizardPreviewPage]
+/// mounts and reads them — without keepAlive, auto-dispose wipes state
+/// between the two pages.
 
 abstract class _$WizardState extends $Notifier<WizardDraft> {
   WizardDraft build();

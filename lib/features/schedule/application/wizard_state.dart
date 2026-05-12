@@ -102,7 +102,12 @@ class RefinementSessionNotifier extends _$RefinementSessionNotifier {
 }
 
 /// Holds the in-progress answers for the weekly wizard.
-@riverpod
+///
+/// keepAlive: state must survive page navigation. The new role-based wizard
+/// (RoleWizardPage) sets answers then unmounts before [WizardPreviewPage]
+/// mounts and reads them — without keepAlive, auto-dispose wipes state
+/// between the two pages.
+@Riverpod(keepAlive: true)
 class WizardState extends _$WizardState {
   @override
   WizardDraft build() => const WizardDraft();

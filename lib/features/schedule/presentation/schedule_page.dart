@@ -32,7 +32,7 @@ class SchedulePage extends ConsumerWidget {
       ),
       body: const WeeklyGridView(),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/schedule/wizard'),
+        onPressed: () => context.push('/schedule/wizard-v3'),
         icon: const Icon(Icons.auto_awesome),
         label: const Text('주간 생성'),
       ),
