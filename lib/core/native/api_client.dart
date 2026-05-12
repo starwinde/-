@@ -35,12 +35,19 @@ class ApiClient {
 
   final http.Client _client;
 
+  /// Debug 빌드에서 self-signed TLS 인증서를 받아들일 호스트 화이트리스트.
+  /// 디바이스가 호스트 PC 의 n8n 에 LAN 으로 접근할 때 사용 (rev 36).
+  static const _debugTlsAllowedHosts = <String>{
+    'localhost',
+    '127.0.0.1',
+    '122.43.160.242',
+  };
+
   static http.Client _buildClient() {
     if (!kDebugMode) return http.Client();
     final inner = HttpClient()
-      ..badCertificateCallback = (cert, host, port) {
-        return host == 'localhost' || host == '127.0.0.1';
-      };
+      ..badCertificateCallback =
+          (cert, host, port) => _debugTlsAllowedHosts.contains(host);
     return IOClient(inner);
   }
 

@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:routinemon/core/constants/xp_rules.dart';
 import 'package:routinemon/features/pet/data/pet_interaction_repository.dart';
 import 'package:routinemon/features/pet/data/pet_repository.dart';
 import 'package:routinemon/features/pet/domain/hp_curve.dart' as hp_curve;
@@ -142,8 +143,19 @@ class PetInteractionService {
         newXp = pet.xp + playXpReward;
         xpDelta = playXpReward;
       case PetActionType.pet:
-        // intimacy 만 누적 — DB 행 자체가 카운트 (insert 위에서 완료).
-        break;
+        // rev 38 — 친밀도 등급(0~3)에 따라 쓰다듬기 1회당 추가 XP 지급.
+        // 이번 쓰다듬기는 위 insert 에서 이미 카운트에 포함되므로 갱신된
+        // 누적 카운트로 tier 결정.
+        final newCount = await _interactionRepo.countAllByAction(
+          petId: petId,
+          action: PetActionType.pet,
+        );
+        final tier = intimacyTierFor(newCount);
+        final bonus = XpRules.intimacyTierBonusXp[tier];
+        if (bonus > 0) {
+          newXp = pet.xp + bonus;
+          xpDelta = bonus;
+        }
     }
 
     if (hpDelta != 0 || xpDelta != 0) {

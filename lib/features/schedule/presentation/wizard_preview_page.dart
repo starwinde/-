@@ -33,8 +33,16 @@ class _WizardPreviewPageState extends ConsumerState<WizardPreviewPage> {
   bool _applying = false;
   bool _refining = false;
   bool _enhancing = false;
+  bool _addingFromText = false;
   EnhanceObjective? _selectedObjective;
   final Map<String, String> _followupAnswers = {};
+  final TextEditingController _freeTextController = TextEditingController();
+
+  @override
+  void dispose() {
+    _freeTextController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -211,6 +219,117 @@ class _WizardPreviewPageState extends ConsumerState<WizardPreviewPage> {
         _error = 'AI 향상 실패: $e';
       });
     }
+  }
+
+  /// rev 37 — 자유 텍스트 입력으로 LLM 추가 일정 생성. 기존 seed 와 병합된
+  /// 응답으로 미리보기 갱신.
+  Future<void> _addFromText() async {
+    final text = _freeTextController.text.trim();
+    final res = _response;
+    final answers = ref.read(wizardStateProvider.notifier).toAnswers();
+    if (text.isEmpty || res == null || answers == null || _addingFromText) {
+      return;
+    }
+    setState(() {
+      _addingFromText = true;
+      _error = null;
+    });
+    try {
+      final service = ref.read(weeklyWizardServiceProvider);
+      final weekStart = WeeklyGridView.mondayOfWeek(DateTime.now());
+      final userId = ref.read(authProvider).value?.id ?? 'local';
+      final enhanced = await service.enhanceWithFreeText(
+        answers: answers,
+        weekStart: weekStart,
+        seed: res.items,
+        freeText: text,
+        userId: userId,
+      );
+      if (!mounted) return;
+      final fellBack = enhanced.source == WizardSource.rule;
+      // free-text 결과는 기존 일정에 append 만. 삭제/대체 X. 폴백 시는
+      // enhanced.items == seed 이므로 append 안 함.
+      final addedCount = fellBack ? 0 : enhanced.items.length;
+      final mergedItems = fellBack
+          ? res.items
+          : <GeneratedScheduleItem>[...res.items, ...enhanced.items];
+      setState(() {
+        _response = enhanced.copyWith(items: mergedItems);
+        _addingFromText = false;
+        if (!fellBack) _freeTextController.clear();
+      });
+      if (fellBack) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('추가 생성 실패 — 기본 결과 유지')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$addedCount개 일정 추가됨 (총 ${mergedItems.length}개)')),
+        );
+      }
+    } on Exception catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _addingFromText = false;
+        _error = '추가 생성 실패: $e';
+      });
+    }
+  }
+
+  Widget _buildFreeTextCard() {
+    return Card(
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: const [
+                Icon(Icons.edit_note),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '특정 일에 할 일 추가',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '예: "수요일 오후 3시 치과 진료", "월~금 점심에 영양제", '
+              '"금요일 저녁 발표 준비 2시간".',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _freeTextController,
+              maxLines: 4,
+              minLines: 2,
+              enabled: !_addingFromText,
+              decoration: const InputDecoration(
+                hintText: '여러 줄 가능. 요일/시간/활동을 자유롭게 적어 주세요.',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              icon: _addingFromText
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.add_task),
+              label: Text(_addingFromText ? '생성 중…' : 'AI 로 추가 생성'),
+              onPressed: _addingFromText ? null : _addFromText,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<List<ExistingScheduleRef>> _fetchExistingThisWeek(
@@ -519,6 +638,9 @@ class _WizardPreviewPageState extends ConsumerState<WizardPreviewPage> {
       slivers: [
         SliverToBoxAdapter(
           child: _buildEnhanceCard(items),
+        ),
+        SliverToBoxAdapter(
+          child: _buildFreeTextCard(),
         ),
         if (conflicts.isNotEmpty)
           SliverToBoxAdapter(

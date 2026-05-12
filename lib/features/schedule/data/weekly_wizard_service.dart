@@ -112,6 +112,49 @@ class WeeklyWizardService {
     );
   }
 
+  /// Path C — free-text 입력으로 추가 일정 생성 (rev 37, 2026-05-12).
+  ///
+  /// 사용자가 미리보기에서 "수요일 오후에 치과", "월~금 점심에 영양제 복용"
+  /// 같은 자유 텍스트를 입력하면 그 의도를 반영한 일정 N개를 LLM 이
+  /// 생성하여 기존 시드와 병합된 응답을 돌려준다.
+  ///
+  /// webhook body: `mode='enhance'` + `user_freetext` 필드 (n8n 워크플로우
+  /// 가 user_freetext 가 비어있지 않으면 프롬프트 prefix 로 첨부). 응답
+  /// 형식은 enhance 와 동일 — 실패 시 seed 폴백.
+  Future<WeeklyWizardResponse> enhanceWithFreeText({
+    required WizardAnswers answers,
+    required DateTime weekStart,
+    required List<GeneratedScheduleItem> seed,
+    required String freeText,
+    String? conversationId,
+    int turn = 1,
+    String? userId,
+  }) async {
+    final enriched = await _withPastContext(answers, userId);
+    final convId = conversationId ?? _newConversationId();
+    final body = <String, dynamic>{
+      'mode': 'enhance',
+      'answers': enriched.toJson(),
+      'week_start': _ymd(weekStart),
+      'rule_based_seed':
+          seed.map((i) => i.toJson()).toList(growable: false),
+      'enhance_objective': 'free_text',
+      'user_freetext': freeText,
+      'conversation_id': convId,
+      'turn': turn,
+    };
+    return _postWithRetry(
+      body,
+      fallback: () => WeeklyWizardResponse(
+        items: seed,
+        source: WizardSource.rule,
+        conversationId: convId,
+        turn: turn,
+        warnings: const ['free-text 추가 생성 실패: rule-based seed 로 폴백'],
+      ),
+    );
+  }
+
   /// Multi-turn refinement (Issue 07). 마지막 2턴 history 윈도잉, 5턴 상한.
   ///
   /// [session] 은 비어있을 수 있다 (첫 호출 시 turnCount=0 → server 가 first-pass 처리).

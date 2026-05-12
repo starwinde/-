@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import 'package:routinemon/core/constants/xp_rules.dart';
 import 'package:routinemon/core/db/app_database.dart' as db;
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
+import 'package:routinemon/features/dev/dev_seed_service.dart';
 import 'package:routinemon/features/focus_tracking/application/settlement_orchestrator.dart';
 import 'package:routinemon/features/pet/application/pet_interaction_service.dart';
 import 'package:routinemon/features/pet/data/pet_interaction_repository.dart';
@@ -26,6 +28,24 @@ class PetDetailPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('내 펫'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.eco),
+            tooltip: '주간 시드 (dev)',
+            onPressed: () async {
+              final seeder = ref.read(devSeedServiceProvider);
+              final messenger = ScaffoldMessenger.of(context);
+              final summary = await seeder.seedWeek(userId: userId);
+              if (!context.mounted) return;
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '주간 시드 완료 — 일정 ${summary.schedulesInserted}건 / '
+                    '세션 ${summary.sessionsInserted}건 (이번 주 100% 수행)',
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.bolt),
             tooltip: '오늘 정산 실행 (dev)',
@@ -144,6 +164,8 @@ class _PetDetailBodyState extends ConsumerState<_PetDetailBody> {
           petId: pet.id,
           onTap: _handleInteraction,
         ),
+        const SizedBox(height: 8),
+        _IntimacyRow(petId: pet.id, tick: _interactionTick),
         const SizedBox(height: 24),
         _SectionTitle('진화 단계'),
         const SizedBox(height: 8),
@@ -155,7 +177,6 @@ class _PetDetailBodyState extends ConsumerState<_PetDetailBody> {
         _InfoRow('태어난 날', _formatDate(pet.createdAt)),
         _InfoRow('현재 XP', '${pet.xp}'),
         _InfoRow('현재 HP', '${pet.hp} / 100'),
-        _IntimacyRow(petId: pet.id, tick: _interactionTick),
         _InfoRow('생존', pet.isAlive ? '생존' : '사망'),
         if (!pet.isAlive && pet.diedAt != null)
           _InfoRow('사망 시각', _formatDate(pet.diedAt!)),
@@ -331,7 +352,68 @@ class _IntimacyRow extends ConsumerWidget {
           .countAllByAction(petId: petId, action: PetActionType.pet),
       builder: (context, snapshot) {
         final count = snapshot.data ?? 0;
-        return _InfoRow('친밀도', '쓰다듬은 횟수 $count회');
+        final tier = intimacyTierFor(count);
+        final bonus = XpRules.intimacyTierBonusXp[tier];
+        final next = nextIntimacyThreshold(count);
+        final base = tier == 0
+            ? 0
+            : XpRules.intimacyTierThresholds[tier - 1];
+        final span = (next ?? count) - base;
+        final done = count - base;
+        final progress = next == null
+            ? 1.0
+            : (span <= 0 ? 0.0 : (done / span).clamp(0.0, 1.0));
+        final theme = Theme.of(context);
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.favorite, color: Colors.pink, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      '친밀도 Lv $tier',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(width: 8),
+                    if (bonus > 0)
+                      Chip(
+                        label: Text('쓰다듬 +$bonus XP'),
+                        visualDensity: VisualDensity.compact,
+                        backgroundColor:
+                            theme.colorScheme.primaryContainer,
+                      ),
+                    const Spacer(),
+                    Text(
+                      '$count회',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 8,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  next == null
+                      ? '최고 등급 도달 — 쓰다듬기 1회당 +$bonus XP'
+                      : '다음 등급까지 ${next - count}회 ($count / $next)',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }

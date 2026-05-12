@@ -9,6 +9,8 @@ import 'package:routinemon/features/ai/data/pdf_report_models.dart';
 import 'package:routinemon/features/ai/data/pdf_report_service.dart';
 import 'package:routinemon/features/ai/data/report_aggregator.dart';
 import 'package:routinemon/features/auth/application/auth_notifier.dart';
+import 'package:routinemon/features/auth/application/user_id_migrator.dart';
+import 'package:routinemon/features/pet/data/pet_repository.dart';
 
 /// AI 리포트 페이지. 사용자가 먼저 기간(주/월)을 선택하고, 선택한 범위로
 /// LLM 리포트를 생성한 뒤 PDF로 내보낼 수 있다. 입력 데이터는
@@ -87,9 +89,20 @@ class _AiReportPageState extends ConsumerState<AiReportPage> {
   String _resolveUserId() {
     final authState = ref.read(authProvider);
     return authState.maybeWhen(
-      data: (user) => user?.id ?? 'preview-user',
-      orElse: () => 'preview-user',
+      data: (user) => user?.id ?? guestUserId,
+      orElse: () => guestUserId,
     );
+  }
+
+  Future<String?> _resolveActivePetName(String userId) async {
+    try {
+      final repo = ref.read(petRepositoryProvider);
+      final pet = await repo.getActivePet(userId);
+      final name = pet?.name.trim();
+      return (name == null || name.isEmpty) ? null : name;
+    } on Object {
+      return null;
+    }
   }
 
   Future<AiReportRequest> _buildRequest(DateTimeRange range) async {
@@ -137,11 +150,13 @@ class _AiReportPageState extends ConsumerState<AiReportPage> {
     if (report == null) return;
     setState(() => _exporting = true);
     try {
+      final userId = _resolveUserId();
+      final petName = await _resolveActivePetName(userId);
       final req = PdfReportRequest(
-        userId: _resolveUserId(),
+        userId: userId,
         period: widget.period,
         report: report,
-        meta: PdfReportMeta(petName: '두두', periodLabel: _periodLabel()),
+        meta: PdfReportMeta(petName: petName, periodLabel: _periodLabel()),
       );
       final bytes = await ref.read(pdfReportServiceProvider).render(req);
       if (!mounted) return;
