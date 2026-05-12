@@ -49,6 +49,12 @@ class ScheduleSessionTrigger {
   /// becoming active forces a session swap).
   int? _activeScheduleId;
 
+  /// rev 35 — phone-use 누적 분, 일정 내. 일정 전환 시 0.
+  int _phoneMinutesInSchedule = 0;
+
+  /// rev 35 — 일정 내 누적 HP 감소 횟수 (cap 5).
+  int _hpDecrementsInSchedule = 0;
+
   /// Last poll wall-clock — bounds the next usage query window.
   int _lastPollMs = DateTime.now().millisecondsSinceEpoch;
 
@@ -108,6 +114,9 @@ class ScheduleSessionTrigger {
       }
       _activeSessionId = null;
       _activeScheduleId = null;
+      // rev 35 — 일정 전환 시 per-schedule HP 카운터 0 리셋.
+      _phoneMinutesInSchedule = 0;
+      _hpDecrementsInSchedule = 0;
       // 알림 정리 — 다음 분기에서 새 일정이 시작되면 다시 표시.
       unawaited(_safe(_api.stopScheduleNotification));
     }
@@ -161,24 +170,52 @@ class ScheduleSessionTrigger {
     final prefs = await SharedPreferences.getInstance();
     if (RealtimeHpRule.isFeatureEnabled(
         prefs.getBool(RealtimeHpRule.featureFlagKey))) {
-      await _applyRealtimeHp(userId: userId, phoneInUse: phoneInUse);
+      await _applyRealtimeHp(
+        userId: userId,
+        phoneInUse: phoneInUse,
+        allowDisruption: current.allowDisruption,
+        now: now,
+        prefs: prefs,
+      );
     }
   }
 
+  /// rev 35 — windowed (3-min/-1, schedule cap 5, daily cap 10) +
+  /// allowDisruption 게이트. 카운터는 [_phoneMinutesInSchedule] /
+  /// [_hpDecrementsInSchedule] 인스턴스 변수에, 일일 누적은
+  /// SharedPreferences `daily_hp_loss_YYYY-MM-DD` 에.
   Future<void> _applyRealtimeHp({
     required String userId,
     required bool phoneInUse,
+    required bool allowDisruption,
+    required DateTime now,
+    required SharedPreferences prefs,
   }) async {
     try {
       final petRepo = ref.read(petRepositoryProvider);
       final pet = await petRepo.getActivePet(userId);
       if (pet == null) return;
-      final outcome = RealtimeHpRule.computeMinuteOutcome(
+
+      final dailyKey = _dailyHpLossKey(now);
+      final dailyLoss = prefs.getInt(dailyKey) ?? 0;
+
+      final outcome = RealtimeHpRule.computeWindowedOutcome(
         currentHp: pet.hp,
         currentXp: pet.xp,
         phoneInUse: phoneInUse,
+        allowDisruption: allowDisruption,
+        phoneMinutesInSchedule: _phoneMinutesInSchedule,
+        decrementsInSchedule: _hpDecrementsInSchedule,
+        dailyHpLossSoFar: dailyLoss,
         startingIsAlive: pet.isAlive,
       );
+
+      _phoneMinutesInSchedule = outcome.newPhoneMinutesInSchedule;
+      _hpDecrementsInSchedule = outcome.newDecrementsInSchedule;
+      if (outcome.newDailyHpLoss != dailyLoss) {
+        await prefs.setInt(dailyKey, outcome.newDailyHpLoss);
+      }
+
       if (outcome.delta == 0 && outcome.newHp == pet.hp) return;
       await petRepo.applySettlement(
         petId: pet.id,
@@ -189,6 +226,13 @@ class ScheduleSessionTrigger {
     } on Exception {
       // 회복 가능 에러는 무시 — 다음 tick 에서 재시도.
     }
+  }
+
+  String _dailyHpLossKey(DateTime now) {
+    final y = now.year.toString().padLeft(4, '0');
+    final m = now.month.toString().padLeft(2, '0');
+    final d = now.day.toString().padLeft(2, '0');
+    return '$dailyHpLossKeyPrefix$y-$m-$d';
   }
 
   int _plannedMinutes(Schedule s) {

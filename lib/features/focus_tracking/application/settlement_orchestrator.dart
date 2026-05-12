@@ -1,10 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:routinemon/core/constants/xp_rules.dart';
 import 'package:routinemon/core/db/app_database.dart';
 import 'package:routinemon/features/focus_tracking/application/daily_settlement.dart';
 import 'package:routinemon/features/focus_tracking/data/session_repository.dart';
+import 'package:routinemon/features/focus_tracking/domain/realtime_hp_rule.dart';
 import 'package:routinemon/features/pet/data/pet_repository.dart';
 import 'package:routinemon/features/pet/domain/pet.dart';
 import 'package:routinemon/features/schedule/application/schedule_notifier.dart';
@@ -66,11 +68,16 @@ class SettlementOrchestrator {
       isAlive: pet.isAlive,
     );
 
+    // rev 35 — 하루 누적 HP 손실(실시간 + 정산) ≤ dailyHpLossCap (10).
+    // 실시간 측은 매 -1 감소 시 daily_hp_loss_<date> 키를 +1 한다.
+    // 정산 차감액은 (cap - 이미 손실한 양) 안으로 clamp.
+    final adjusted = await _capDailyHpLoss(date: date, raw: result);
+
     await _insertDailyScore(
       userId: userId,
       date: date,
       ratio: ratio,
-      result: result,
+      result: adjusted,
       totalActual: totalActual,
       totalBlacklist: sessions.fold<int>(
         0,
@@ -80,12 +87,71 @@ class SettlementOrchestrator {
 
     await _petRepo.applySettlement(
       petId: pet.id,
-      newXp: result.newXp,
-      newHp: result.newHp,
-      isAlive: result.isAlive,
+      newXp: adjusted.newXp,
+      newHp: adjusted.newHp,
+      isAlive: adjusted.isAlive,
     );
 
-    return result;
+    return adjusted;
+  }
+
+  /// 정산 결과를 daily HP loss cap 안으로 clamp.
+  /// hpChange 가 양수(증가)면 그대로. 음수면 (cap - 이미 손실한 양) 까지만.
+  Future<SettlementResult> _capDailyHpLoss({
+    required DateTime date,
+    required SettlementResult raw,
+  }) async {
+    if (raw.hpChange >= 0) return raw;
+    final prefs = await SharedPreferences.getInstance();
+    final key = _dailyHpLossKey(date);
+    final lossSoFar = prefs.getInt(key) ?? 0;
+    final remaining = XpRules.dailyHpLossCap - lossSoFar;
+    if (remaining <= 0) {
+      // 이미 cap 도달 → 정산 차감 0.
+      final restoredHp = raw.newHp - raw.hpChange; // raw.hpChange < 0
+      return SettlementResult(
+        grade: raw.grade,
+        xpEarned: raw.xpEarned,
+        hpChange: 0,
+        newHp: restoredHp.clamp(0, XpRules.maxHp),
+        newXp: raw.newXp,
+        newLevel: raw.newLevel,
+        evolved: raw.evolved,
+        isAlive: raw.isAlive || restoredHp > 0,
+        consecutiveDCount: raw.consecutiveDCount,
+        taskPenalty: raw.taskPenalty,
+      );
+    }
+    final rawLoss = -raw.hpChange;
+    if (rawLoss <= remaining) {
+      // 통째로 적용 가능 — 카운터만 갱신.
+      await prefs.setInt(key, lossSoFar + rawLoss);
+      return raw;
+    }
+    // 부분 적용 — clamped 차감으로 변경.
+    final cappedChange = -remaining;
+    final hpDelta = cappedChange - raw.hpChange; // 양수 (회복 방향)
+    final newHp = (raw.newHp + hpDelta).clamp(0, XpRules.maxHp);
+    await prefs.setInt(key, XpRules.dailyHpLossCap);
+    return SettlementResult(
+      grade: raw.grade,
+      xpEarned: raw.xpEarned,
+      hpChange: cappedChange,
+      newHp: newHp,
+      newXp: raw.newXp,
+      newLevel: raw.newLevel,
+      evolved: raw.evolved,
+      isAlive: raw.isAlive || newHp > 0,
+      consecutiveDCount: raw.consecutiveDCount,
+      taskPenalty: raw.taskPenalty,
+    );
+  }
+
+  String _dailyHpLossKey(DateTime now) {
+    final y = now.year.toString().padLeft(4, '0');
+    final m = now.month.toString().padLeft(2, '0');
+    final d = now.day.toString().padLeft(2, '0');
+    return '$dailyHpLossKeyPrefix$y-$m-$d';
   }
 
   Future<int> _countIncompleteTasksFor(String userId, DateTime date) async {

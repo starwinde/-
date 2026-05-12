@@ -75,6 +75,16 @@ class XpRules {
   /// 미완료 할일 일일 최대 패널티.
   static const incompleteTaskDailyMax = -15;
 
+  /// 실시간 HP 감소 1 단위에 필요한 phone-use 누적 분.
+  /// (방해 허용 일정 진행 중 3 분 사용 = -1 HP)
+  static const realtimeHpMinutesPerDecrement = 3;
+
+  /// 한 일정 안에서 가능한 실시간 HP 감소 횟수 상한 (= -5 HP).
+  static const realtimeHpMaxDecrementsPerSchedule = 5;
+
+  /// 하루(자정 기준) 누적 HP 손실 상한 — 실시간 + 정산 합산.
+  static const dailyHpLossCap = 10;
+
   /// 등급별 보상 테이블.
   static const gradeRewards = <FocusGrade, GradeReward>{
     FocusGrade.s: GradeReward(minRatio: 0.95, xp: 30, hp: 15),

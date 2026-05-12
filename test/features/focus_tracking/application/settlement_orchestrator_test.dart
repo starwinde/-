@@ -5,8 +5,10 @@ import 'package:routinemon/core/db/app_database.dart';
 import 'package:routinemon/features/focus_tracking/application/settlement_orchestrator.dart';
 import 'package:routinemon/features/focus_tracking/data/session_repository.dart';
 import 'package:routinemon/features/pet/data/pet_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late AppDatabase db;
   late SessionRepository sessionRepo;
   late PetRepository petRepo;
@@ -47,6 +49,7 @@ void main() {
   }
 
   setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
     db = AppDatabase.forTesting(NativeDatabase.memory());
     sessionRepo = SessionRepository(db);
     petRepo = PetRepository(db);
@@ -141,5 +144,70 @@ void main() {
     final scores = await db.select(db.dailyScores).get();
     expect(scores, hasLength(1),
         reason: '두 번 정산해도 daily_scores 행은 1개만 유지');
+  });
+
+  // rev 35 — 정산 차감을 daily cap 10 안에서 clamp.
+  group('daily HP loss cap 10 (rev 35)', () {
+    test('실시간 5 손실 후 D 등급 → 정산 차감 -5 로 clamp', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'daily_hp_loss_2026-05-05': 5,
+      });
+      final petId = await seedPet();
+      final today = DateTime(2026, 5, 5);
+      await seedSession(
+        start: today.add(const Duration(hours: 9)),
+        plannedMin: 60,
+        focusedMin: 10,
+        blacklistMin: 50,
+      );
+
+      final result = await orch.runForDate(userId: userId, date: today);
+      expect(result!.grade.name, 'd');
+      expect(result.hpChange, -5,
+          reason: 'D 기본 -10 인데 cap 잔여 5 만 차감');
+
+      final pet = await (db.select(db.pets)..where((p) => p.id.equals(petId)))
+          .getSingle();
+      expect(pet.hp, 95);
+    });
+
+    test('이미 cap 10 도달 시 정산 차감 0', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'daily_hp_loss_2026-05-05': 10,
+      });
+      final petId = await seedPet();
+      final today = DateTime(2026, 5, 5);
+      await seedSession(
+        start: today.add(const Duration(hours: 9)),
+        plannedMin: 60,
+        focusedMin: 10,
+        blacklistMin: 50,
+      );
+
+      final result = await orch.runForDate(userId: userId, date: today);
+      expect(result!.hpChange, 0);
+      final pet = await (db.select(db.pets)..where((p) => p.id.equals(petId)))
+          .getSingle();
+      expect(pet.hp, 100);
+    });
+
+    test('실시간 손실 0 + D → 그대로 -10 + 카운터 10 갱신', () async {
+      final petId = await seedPet();
+      final today = DateTime(2026, 5, 5);
+      await seedSession(
+        start: today.add(const Duration(hours: 9)),
+        plannedMin: 60,
+        focusedMin: 10,
+        blacklistMin: 50,
+      );
+
+      final result = await orch.runForDate(userId: userId, date: today);
+      expect(result!.hpChange, -10);
+      final pet = await (db.select(db.pets)..where((p) => p.id.equals(petId)))
+          .getSingle();
+      expect(pet.hp, 90);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('daily_hp_loss_2026-05-05'), 10);
+    });
   });
 }

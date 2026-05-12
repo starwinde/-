@@ -107,4 +107,111 @@ void main() {
       );
     });
   });
+
+  // rev 35 — windowed (3-min/-1, schedule cap 5, daily cap 10) +
+  // allowDisruption 게이트.
+  group('RealtimeHpRule.computeWindowedOutcome', () {
+    WindowedMinuteOutcome step(
+      WindowedMinuteOutcome prev, {
+      required bool phoneInUse,
+      bool allowDisruption = true,
+      int currentHp = 100,
+      int currentXp = 0,
+    }) {
+      return RealtimeHpRule.computeWindowedOutcome(
+        currentHp: prev.newHp == 0 && prev.delta == 0 ? currentHp : prev.newHp,
+        currentXp: prev.newXp,
+        phoneInUse: phoneInUse,
+        allowDisruption: allowDisruption,
+        phoneMinutesInSchedule: prev.newPhoneMinutesInSchedule,
+        decrementsInSchedule: prev.newDecrementsInSchedule,
+        dailyHpLossSoFar: prev.newDailyHpLoss,
+        startingIsAlive: prev.isAlive,
+      );
+    }
+
+    const seed = WindowedMinuteOutcome(
+      delta: 0,
+      newHp: 100,
+      newXp: 0,
+      isAlive: true,
+      newPhoneMinutesInSchedule: 0,
+      newDecrementsInSchedule: 0,
+      newDailyHpLoss: 0,
+    );
+
+    test('allowDisruption=false → 카운터 변동 없음 (방해 안 허용 일정)', () {
+      final r = step(seed, phoneInUse: true, allowDisruption: false);
+      expect(r.delta, 0);
+      expect(r.newHp, 100);
+      expect(r.newPhoneMinutesInSchedule, 0);
+      expect(r.newDecrementsInSchedule, 0);
+    });
+
+    test('1분, 2분 phone use → no decrement (3 분 미만)', () {
+      var r = step(seed, phoneInUse: true);
+      expect(r.delta, 0);
+      expect(r.newHp, 100);
+      expect(r.newPhoneMinutesInSchedule, 1);
+      r = step(r, phoneInUse: true);
+      expect(r.delta, 0);
+      expect(r.newPhoneMinutesInSchedule, 2);
+    });
+
+    test('3분째 → -1 HP, 6분째 → 추가 -1', () {
+      var r = step(seed, phoneInUse: true);
+      r = step(r, phoneInUse: true);
+      r = step(r, phoneInUse: true);
+      expect(r.delta, -1);
+      expect(r.newHp, 99);
+      expect(r.newPhoneMinutesInSchedule, 3);
+      expect(r.newDecrementsInSchedule, 1);
+      expect(r.newDailyHpLoss, 1);
+
+      r = step(r, phoneInUse: true);
+      r = step(r, phoneInUse: true);
+      r = step(r, phoneInUse: true);
+      expect(r.delta, -1);
+      expect(r.newHp, 98);
+      expect(r.newDecrementsInSchedule, 2);
+      expect(r.newDailyHpLoss, 2);
+    });
+
+    test('일정 cap 5 — 18 분 이상 사용해도 -5 에서 멈춤', () {
+      var r = seed;
+      for (var i = 0; i < 21; i++) {
+        r = step(r, phoneInUse: true);
+      }
+      expect(r.newDecrementsInSchedule, 5);
+      expect(r.newHp, 95);
+      expect(r.newDailyHpLoss, 5);
+    });
+
+    test('phoneInUse=false 사이에 끼면 누적 분 정지 (리셋 X)', () {
+      var r = step(seed, phoneInUse: true);
+      r = step(r, phoneInUse: true);
+      expect(r.newPhoneMinutesInSchedule, 2);
+      r = step(r, phoneInUse: false);
+      expect(r.newPhoneMinutesInSchedule, 2, reason: '폰 안 쓰면 정지만');
+      r = step(r, phoneInUse: true);
+      expect(r.delta, -1, reason: '3분째 도달 → -1');
+      expect(r.newPhoneMinutesInSchedule, 3);
+    });
+
+    test('일일 cap 10 — daily 합산 10 도달 시 멈춤', () {
+      final preCap = WindowedMinuteOutcome(
+        delta: 0,
+        newHp: 90,
+        newXp: 0,
+        isAlive: true,
+        newPhoneMinutesInSchedule: 2,
+        newDecrementsInSchedule: 4,
+        newDailyHpLoss: 10,
+      );
+      final r = step(preCap, phoneInUse: true);
+      expect(r.delta, 0);
+      expect(r.newHp, 90);
+      expect(r.newPhoneMinutesInSchedule, 3);
+    });
+  });
 }
