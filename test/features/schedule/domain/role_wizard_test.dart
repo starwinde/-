@@ -53,10 +53,29 @@ void main() {
       }
     });
 
-    test('first question is class-schedule (수업 시간대)', () {
+    test('first question is school_level (초/중/고/대 × 학원)', () {
       final qs = questionsFor(Role.student);
-      expect(qs.first.id, 'class_window');
-      expect(qs.first.label, contains('수업'));
+      expect(qs.first.id, 'school_level');
+      expect(qs.first.options.length, 8);
+      final ids = qs.first.options.map((o) => o.id).toList();
+      expect(
+        ids,
+        containsAll(<String>[
+          'elem_no',
+          'elem_yes',
+          'mid_no',
+          'mid_yes',
+          'high_no',
+          'high_yes',
+          'uni_no',
+          'uni_yes',
+        ]),
+      );
+    });
+
+    test('class_window is now second question', () {
+      final qs = questionsFor(Role.student);
+      expect(qs[1].id, 'class_window');
     });
   });
 

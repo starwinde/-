@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:routinemon/features/schedule/data/role_answer_projector.dart';
 import 'package:routinemon/features/schedule/data/wizard_models.dart';
 import 'package:routinemon/features/schedule/domain/rule_based_planner.dart';
+import 'package:routinemon/features/schedule/domain/role_wizard.dart';
 import 'package:routinemon/features/schedule/domain/schedule_category.dart';
 
 const _planner = RuleBasedPlanner();
@@ -352,6 +354,37 @@ void main() {
       );
       expect(r.items.length, inInclusiveRange(10, 18));
       expect(_hasSelfOverlap(r.items), isFalse);
+    });
+  });
+
+  // 2026-05-12 sparse-weekday 회귀: 사용자가 본 "화/목만 채워짐" 패턴이 v3
+  // 위저드 worker + work_form=shift 결정론 결과임을, office_9_6 입력은
+  // 평일 5일 모두 채움을 확정한다. RoleAnswerProjector → RuleBasedPlanner
+  // 파이프라인 end-to-end.
+  group('RuleBasedPlanner — sparse-weekday 회귀 (v3 worker)', () {
+    test('worker + office_9_6 → 평일 5일 work-spine, 9:00 시작', () {
+      final draft = const RoleAnswerDraft(role: Role.worker)
+          .setAnswer('work_form', 'office_9_6');
+      final answers = RoleAnswerProjector.project(draft);
+      final r = _planner.plan(answers: answers, weekStart: _weekStart);
+      final spine =
+          r.items.where((i) => i.tags.contains('work-spine')).toList();
+      expect(spine.length, 5, reason: '월~금 5일 모두 work-spine');
+      final spineDays = spine.map((i) => i.dayOfWeek).toSet();
+      expect(spineDays, {0, 1, 2, 3, 4});
+      expect(spine.every((i) => i.startTime == '09:00'), isTrue);
+    });
+
+    test('worker + work_form=shift → 화/목/토 3일만 work-spine (사용자 보고 패턴)', () {
+      final draft = const RoleAnswerDraft(role: Role.worker)
+          .setAnswer('work_form', 'shift');
+      final answers = RoleAnswerProjector.project(draft);
+      final r = _planner.plan(answers: answers, weekStart: _weekStart);
+      final spine =
+          r.items.where((i) => i.tags.contains('work-spine')).toList();
+      expect(spine.length, 3);
+      expect(spine.map((i) => i.dayOfWeek).toSet(), {1, 3, 5});
+      expect(spine.every((i) => i.startTime == '22:00'), isTrue);
     });
   });
 }

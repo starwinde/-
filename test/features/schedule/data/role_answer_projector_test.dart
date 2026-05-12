@@ -103,6 +103,25 @@ void main() {
       final w = RoleAnswerProjector.project(draft);
       expect(w.goalFocus, GoalFocus.workStudy);
     });
+    test('school_level: high_yes → freeTime oneHour (학원 다님)', () {
+      final draft = const RoleAnswerDraft(role: Role.student)
+          .setAnswer('school_level', 'high_yes');
+      final w = RoleAnswerProjector.project(draft);
+      expect(w.freeTime, FreeTimeMin.oneHour);
+      expect(w.status, LifestyleStatus.student);
+    });
+    test('school_level: elem_no → freeTime default twoHours', () {
+      final draft = const RoleAnswerDraft(role: Role.student)
+          .setAnswer('school_level', 'elem_no');
+      final w = RoleAnswerProjector.project(draft);
+      expect(w.freeTime, FreeTimeMin.twoHours);
+    });
+    test('school_level: uni_yes → freeTime oneHour (대학생도 학원 다닐 수 있음)', () {
+      final draft = const RoleAnswerDraft(role: Role.student)
+          .setAnswer('school_level', 'uni_yes');
+      final w = RoleAnswerProjector.project(draft);
+      expect(w.freeTime, FreeTimeMin.oneHour);
+    });
   });
 
   group('Worker answer mapping', () {

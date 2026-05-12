@@ -139,6 +139,11 @@ class RoleAnswerProjector {
   }
 
   static FreeTimeMin _freeTime(Map<String, String> a) {
+    // 학원=yes (school_level id 가 `_yes` 로 끝남) → 평일 저녁 슬롯 압축.
+    final sl = a['school_level'];
+    if (sl != null && sl.endsWith('_yes')) {
+      return FreeTimeMin.oneHour;
+    }
     final f = a['me_time'] ?? a['self_focus'];
     return switch (f) {
       'minimal' || 'short' => FreeTimeMin.oneHour,

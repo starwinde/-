@@ -61,7 +61,25 @@ class WizardQuestion {
 }
 
 /// 학생 role 의 7개 질문 — UC2 시드 구현.
+///
+/// Q1 `school_level`: 학교 단계(초/중/고/대) × 학원 여부 8옵션 단일 질문.
+/// id 규칙 `<stage>_<academy>` — stage ∈ {elem, mid, high, uni},
+/// academy ∈ {no, yes}. RoleAnswerProjector 에서 stage/academy 로 분해.
 const _studentQuestions = <WizardQuestion>[
+  WizardQuestion(
+    id: 'school_level',
+    label: '학교 단계와 학원 여부를 골라주세요',
+    options: [
+      WizardOption(id: 'elem_no', label: '초등학생 · 학원 안 다님'),
+      WizardOption(id: 'elem_yes', label: '초등학생 · 학원 다님'),
+      WizardOption(id: 'mid_no', label: '중학생 · 학원 안 다님'),
+      WizardOption(id: 'mid_yes', label: '중학생 · 학원 다님'),
+      WizardOption(id: 'high_no', label: '고등학생 · 학원 안 다님'),
+      WizardOption(id: 'high_yes', label: '고등학생 · 학원 다님'),
+      WizardOption(id: 'uni_no', label: '대학(원)생 · 학원 안 다님'),
+      WizardOption(id: 'uni_yes', label: '대학(원)생 · 학원 다님'),
+    ],
+  ),
   WizardQuestion(
     id: 'class_window',
     label: '평일 수업이 주로 언제 있나요?',
@@ -119,15 +137,6 @@ const _studentQuestions = <WizardQuestion>[
       WizardOption(id: 'occasional', label: '주 1-2회'),
       WizardOption(id: 'regular', label: '주 3-5회'),
       WizardOption(id: 'daily', label: '거의 매일'),
-    ],
-  ),
-  WizardQuestion(
-    id: 'rest_preference',
-    label: '쉬는 시간 선호는?',
-    options: [
-      WizardOption(id: 'short_frequent', label: '짧고 자주 (25/5분)'),
-      WizardOption(id: 'long_block', label: '길게 한 번 (90분 집중 후 휴식)'),
-      WizardOption(id: 'flexible', label: '유동적'),
     ],
   ),
 ];
