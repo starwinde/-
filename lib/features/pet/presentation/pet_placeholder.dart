@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:routinemon/features/pet/domain/pet.dart';
 
-/// 다마고치 이미지 자산이 추가되기 전까지 사용하는 텍스트 플레이스홀더.
+/// 다마고치 이미지 위젯 — 모든 펫 시각 표현의 단일 진실 원천(SoT).
 ///
-/// 단일 진실 원천(SoT) — 모든 펫 시각 표현은 이 위젯을 거친다.
-/// 이미지가 준비되면 [_resolveAssetPath] 가 반환하는 경로에 PNG 를 올리고
-/// `Image.asset` 분기를 활성화하기만 하면 된다.
+/// 자산 경로 규칙: `assets/pet/<species>/<slot>.png` 의 4 슬롯
+/// (egg, baby, growth, adult). [_resolveAssetPath] 가 [kind]/[stage] 로부터
+/// 슬롯을 결정한다. 자산 부재 시 [errorBuilder] 가 텍스트 박스 fallback.
 class PetPlaceholder extends StatelessWidget {
   const PetPlaceholder({
     super.key,
@@ -27,8 +27,39 @@ class PetPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slot = _slotLabel();
-    final caption = _captionFor();
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Image.asset(
+        _resolveAssetPath(),
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+        errorBuilder: (context, error, stackTrace) => _fallback(),
+      ),
+    );
+  }
+
+  String _resolveAssetPath() {
+    final speciesDir = switch (species) {
+      PetSpecies.bird => 'bird',
+      PetSpecies.dragon => 'dragon',
+      PetSpecies.dolphin => 'dolphin',
+    };
+    final slot = switch (kind) {
+      // cracking 별 자산 부재 — egg 재사용 (v0.1.0 인벤토리 차이 흡수).
+      PetPlaceholderKind.egg || PetPlaceholderKind.eggCracking => 'egg',
+      PetPlaceholderKind.stage => switch (stage) {
+          <= 1 => 'baby',
+          2 => 'growth',
+          _ => 'adult',
+        },
+    };
+    return 'assets/pet/$speciesDir/$slot.png';
+  }
+
+  Widget _fallback() {
     final color = _baseColor();
     return Container(
       width: size,
@@ -42,7 +73,7 @@ class PetPlaceholder extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Text(
-          '$slot\n$caption',
+          _captionFor(),
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: size / 8,
@@ -72,23 +103,6 @@ class PetPlaceholder extends StatelessWidget {
       PetPlaceholderKind.eggCracking => '$s 부화 직전',
       PetPlaceholderKind.stage => '$s Lv$stage',
     };
-  }
-
-  /// `그림 A1`, `그림 C3` 등 인벤토리 슬롯 라벨.
-  String _slotLabel() {
-    switch (kind) {
-      case PetPlaceholderKind.egg:
-        return '그림 A${species.index + 1}';
-      case PetPlaceholderKind.eggCracking:
-        return '그림 B${species.index + 1}';
-      case PetPlaceholderKind.stage:
-        final letter = switch (species) {
-          PetSpecies.bird => 'C',
-          PetSpecies.dragon => 'D',
-          PetSpecies.dolphin => 'E',
-        };
-        return '그림 $letter$stage';
-    }
   }
 }
 
